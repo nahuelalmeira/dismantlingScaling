@@ -70,7 +70,7 @@ def updated_attack(graph, attack, out=None, random_state=0):
         j += 1
             
         if out:
-            f.write('{%d}\n'.format(original_idx))
+            f.write('{:d}\n'.format(original_idx))
             f.flush()
         
     if out:
@@ -176,3 +176,12 @@ if __name__ == '__main__':
     oi_list = get_index_list(g, 'BtwU')
     assert(4 in oi_list[4:])
 
+    print('Testing ER 500')
+    g = ig.Graph().Read_Edgelist('./test/ER_N500_p0.008_00000_gcc.txt', 
+                                 directed=False)
+    oi_list = get_index_list(g, 'Deg')
+    oi_list2 = np.loadtxt('./test/oi_list_ER_N500_p0.008_00000_Deg.txt', dtype='int')
+    for i in range(10):
+        print(oi_list[i], g.vs[oi_list[i]].degree(), oi_list2[i], g.vs[oi_list2[i]].degree())
+    #print(oi_list[:10])
+    #print(oi_list2[:10])
