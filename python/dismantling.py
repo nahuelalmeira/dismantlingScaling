@@ -120,9 +120,9 @@ def get_index_list(G, attack, out=None, random_state=0):
         print('ERROR: G must be undirected.', file=sys.stderr)
         return 1
 
-    if not G.is_connected():
-        print('ERROR: G must be connected.', file=sys.stderr)
-        return 1
+    #if not G.is_connected():
+    #    print('ERROR: G must be connected.', file=sys.stderr)
+    #    return 1
 
     if not G.is_simple():
         print('ERROR: G must be simple.', file=sys.stderr)
