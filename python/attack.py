@@ -35,7 +35,8 @@ for attack in attacks:
     for seed in seeds:
         net_name = base_net_name + '_{:05d}'.format(seed)
         net_dir = os.path.join(base_net_dir, net_name)
-        input_name = net_name + '_gcc.txt'
+        #input_name = net_name + '_gcc.txt'
+        input_name = net_name + '.txt'
         full_input_name = os.path.join(net_dir, input_name)
 
         output_dir = os.path.join(net_dir, attack)
