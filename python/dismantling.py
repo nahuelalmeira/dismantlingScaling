@@ -2,6 +2,38 @@ import os
 import sys
 import numpy as np
 import igraph as ig
+import queue
+
+
+def get_nn_ball(g, v, l):
+    Q = queue.Queue()
+    Q.put(v)
+    d = np.zeros(g.vcount(), dtype='int') - 1 
+    distance = 0
+    d[v] = distance
+    ball = []
+    while distance < l:
+        u = Q.get()
+        
+        distance += 1
+        for nn in g.neighbors(u):
+            if d[nn] < 0:
+                d[nn] = distance
+                Q.put(nn)
+                ball.append(nn)
+    return ball
+
+
+def collective_influence(g, l):
+    CI = np.zeros(g.vcount(), dtype='int')
+    for v in g.vs():       
+        ball = get_nn_ball(g, v.index, l)  
+        nn_degrees = np.array(g.degree(ball))
+        print(v.index)
+        for nn, d in zip(ball, nn_degrees):
+            print(nn, d)
+        CI[v.index] = (g.degree(v.index) - 1) * np.sum(nn_degrees-1)
+    return CI
 
 def initial_attack(g, attack, out, random_state=0):
     
@@ -153,6 +185,7 @@ if __name__ == '__main__':
     g.add_vertices(n)
     g.add_edges(test_net_1)
     oi_list = get_index_list(g, 'Deg')
+    print(collective_influence(g, 1))
     assert(oi_list[:2].tolist() == [3, 1])
 
     print('Testing network 2')
