@@ -27,13 +27,13 @@ for attack in supported_attacks:
     if attack in sys.argv:
         attacks.append(attack)
 
-base_net_name = get_base_network_name(net_type, size, param)
-base_net_dir = os.path.join(dir_name, base_net_name)
+base_net_name, base_net_name_size = get_base_network_name(net_type, size, param)
+base_net_dir = os.path.join(dir_name, base_net_name, base_net_name_size)
 
 for attack in attacks:
     print(attack)
     for seed in seeds:
-        net_name = base_net_name + '_{:05d}'.format(seed)
+        net_name = base_net_name_size + '_{:05d}'.format(seed)
         net_dir = os.path.join(base_net_dir, net_name)
         #input_name = net_name + '_gcc.txt'
         input_name = net_name + '.txt'

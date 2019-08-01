@@ -20,13 +20,13 @@ else:
 
 seeds = range(min_seed, max_seed)
 dir_name = os.path.join('../networks', net_type)
+base_net_name, base_net_name_size = get_base_network_name(net_type, size, param)
 
-base_net_name = get_base_network_name(net_type, size, param)
 
 for seed in seeds:
-   
-    output_name = base_net_name + '_{:05d}.txt'.format(seed) 
-    net_dir_name = os.path.join(dir_name, base_net_name, output_name[:-4])
+    
+    output_name = base_net_name_size + '_{:05d}.txt'.format(seed) 
+    net_dir_name = os.path.join(dir_name, base_net_name, base_net_name_size, output_name[:-4])
     pathlib.Path(net_dir_name).mkdir(parents=True, exist_ok=True)
     full_name = os.path.join(net_dir_name, output_name)
 
@@ -37,19 +37,8 @@ for seed in seeds:
     print(output_name)
     if net_type == 'ER':
         N = int(size)
-        p = float(param)
+        k = float(param)
+        p = k/N
         G = ig.Graph().Erdos_Renyi(N, p)
-    elif net_type == 'BA':
-        N = int(size)
-        m = int(param)
-        G = ig.Graph().Barabasi(N, m)  
-    elif net_type == 'Lattice':
-        L = int(size)
-        f = float(param)
-        G = ig.Graph().Lattice([L, L], nei=1, circular=False)
-        M = G.ecount()
-        edges_to_remove = np.random.choice(G.es(), int(f*M), replace=False)
-        indices_to_remove = [e.index for e in edges_to_remove]
-        G.delete_edges(indices_to_remove)
 
     G.write_edgelist(full_name) 
