@@ -37,6 +37,10 @@ def collective_influence(g, l):
 
 def initial_attack(g, attack, out, random_state=0):
     
+    if os.path.isfile(out):
+        original_indices = np.loadtxt(out, dtype='int')
+        return original_indices
+
     ## Set random seed for reproducibility
     np.random.seed(random_state)  
 
