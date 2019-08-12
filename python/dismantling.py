@@ -80,10 +80,11 @@ def updated_attack(graph, attack, out=None, random_state=0):
     j = 0
     if out:
         if os.path.isfile(out) and os.path.getsize(out) > 0: 
-            oi_values = np.loadtxt(out, dtype='int')
+            oi_values = np.loadtxt(out, dtype='int', comments='\x00')
             g.delete_vertices(oi_values)
             oi_values = np.array(oi_values) ## In case oi_values is one single integer
             j += len(oi_values)
+            np.savetxt(out, oi_values, fmt='%d')
 
         f = open(out, 'a+')
 
