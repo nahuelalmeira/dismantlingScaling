@@ -11,8 +11,7 @@ OVERWRITE=$4
 
 BASE_NET_DIR="${BASE_DIR}/${BASE_NET}/${BASE_NET}_N${N}"
 
-#for SEED in {00000..00002}; do
-for SEED in {00000..9999}; do
+for SEED in {10000..19999}; do
 
     NET_NAME="${BASE_NET}_N${N}_${SEED}"
     NET_DIR="${BASE_NET_DIR}/${NET_NAME}"
