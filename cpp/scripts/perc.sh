@@ -7,12 +7,13 @@ BASE_DIR="../../networks/ER"
 BASE_NET=$1
 N=$2
 ATTACK=$3
-OVERWRITE=$4
+MIN_SEED=$4
+MAX_SEED=$5
+OVERWRITE=$6
 
 BASE_NET_DIR="${BASE_DIR}/${BASE_NET}/${BASE_NET}_N${N}"
 
-#for SEED in {00000..00002}; do
-for SEED in {00000..9999}; do
+for SEED in $(seq -f "%05g" ${MIN_SEED} ${MAX_SEED}); do
 
     NET_NAME="${BASE_NET}_N${N}_${SEED}"
     NET_DIR="${BASE_NET_DIR}/${NET_NAME}"
