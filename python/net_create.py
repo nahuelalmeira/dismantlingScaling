@@ -40,5 +40,13 @@ for seed in seeds:
         k = float(param)
         p = k/N
         G = ig.Graph().Erdos_Renyi(N, p)
+    elif net_type == 'RR':
+        N = int(size)
+        k = int(param)
+        G = ig.Graph().K_Regular(N, k)
+    elif net_type == 'BA':
+        N = int(size)
+        m = int(param)
+        G = ig.Graph().Barabasi(N, m)
 
-    G.write_edgelist(full_name) 
+    G.write_edgelist(full_name)

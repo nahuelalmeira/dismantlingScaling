@@ -1,15 +1,18 @@
 #!/bin/bash
 
-# Example: echo $(seq 1 8) | xargs -n 1 -P 4 ./perc_parallel.sh ER_k5.00 16000 Ran True
+# Example: echo $(seq 1 8) | xargs -n 1 -P 4 ./perc_parallel.sh ER k5.00 16000 Ran True
 
-BASE_DIR="../../networks/ER"
+BASE_DIR="../../networks"
 
-BASE_NET=$1
-N=$2
-ATTACK=$3
-OVERWRITE=$4
-SEED=$( printf %05d $5 )
+NET_TYPE=$1
+PARAM=$2
+N=$3
+ATTACK=$4
+OVERWRITE=$5
+SEED=$( printf %05d $6 )
 
+BASE_DIR="${BASE_DIR}/${NET_TYPE}"
+BASE_NET="${NET_TYPE}_${PARAM}"
 BASE_NET_DIR="${BASE_DIR}/${BASE_NET}/${BASE_NET}_N${N}"
 
 NET_NAME="${BASE_NET}_N${N}_${SEED}"
