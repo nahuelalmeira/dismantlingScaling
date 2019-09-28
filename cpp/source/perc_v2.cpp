@@ -1,3 +1,11 @@
+/* 
+
+Compile as:
+
+g++ -o2 -std=c++11 ../source/perc_v2.cpp -o ../perc_v2
+
+*/
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <vector>
