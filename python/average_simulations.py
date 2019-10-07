@@ -1,5 +1,6 @@
 import os
 import sys
+import tarfile
 import igraph as ig
 import numpy as np
 import pandas as pd
@@ -14,10 +15,13 @@ max_seed = int(sys.argv[5])
 if net_type in ['ER', 'RR', 'BA']:
     N = int(size)
 
+overwrite = False
 if 'overwrite' in sys.argv:
     overwrite = True
-else:
-    overwrite = False
+
+verbose = False
+if 'verbose' in sys.argv:
+    verbose = True
 
 attacks = []
 if 'BtwU' in sys.argv:
@@ -30,6 +34,13 @@ if 'Deg' in sys.argv:
     attacks.append('Deg')
 if 'Ran' in sys.argv:
     attacks.append('Ran')
+
+print('------- Params -------')
+print('net_type =', net_type)
+print('param    =', param)
+print('min_seed =', min_seed)
+print('max_seed =', max_seed)
+print('----------------------', end='\n\n')
 
 dir_name = os.path.join('../networks', net_type)
 base_net_name, base_net_name_size = get_base_network_name(net_type, size, param)
@@ -52,23 +63,39 @@ for attack in attacks:
 
     valid_its = 0
     for seed in range(min_seed, max_seed):
-        
+       
         network = base_net_name_size + '_{:05d}'.format(seed)
         attack_dir_name = os.path.join(dir_name, base_net_name, base_net_name_size, network, attack)
-        
+
+        ## Extract network file
+        tar_input_name = 'comp_data.tar.gz'
+        full_tar_input_name = os.path.join(attack_dir_name, tar_input_name)
+        if not os.path.exists(full_tar_input_name):
+            continue
+        tar = tarfile.open(full_tar_input_name, 'r:gz')
+        tar.extractall(attack_dir_name)
+        tar.close()
+
         full_file_name  = os.path.join(attack_dir_name, 'comp_data.txt')
         if not os.path.isfile(full_file_name):
             continue
-        print(seed)
 
+        if verbose:
+            print(seed)
+
+        ## Read data
         aux = np.loadtxt(full_file_name)
+
+        ## Remove network file
+        os.remove(full_file_name)
+
         len_aux = aux.shape[0]
         len_aux = aux.shape[0]
         if len_aux > N:
-            print('ERROR: Len of array is greater than network size')
+            print('ERROR: Seed {}. Len of array is greater than network size'.format(seed))
             continue
         if len_aux < 0.9*N:
-            print('ERROR: Len of array is too short')
+            print('ERROR: Seed {}. Len of array is too short'.format(seed))
             continue
 
         valid_its += 1
