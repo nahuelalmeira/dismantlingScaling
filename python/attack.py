@@ -20,7 +20,8 @@ if 'overwrite' in sys.argv:
 else:
     overwrite = False
 
-dir_name = os.path.join('../networks', net_type)
+python_file_dir_name = os.path.dirname(__file__)
+dir_name = os.path.join(python_file_dir_name, '../networks', net_type)
 seeds = range(min_seed, max_seed)
 
 attacks = []
