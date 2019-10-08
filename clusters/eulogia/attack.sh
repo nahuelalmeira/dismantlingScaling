@@ -11,6 +11,6 @@ ATTACK=${4}
 SEED=$(expr $5 - 1)
 SEEDP1=$5
 
-echo "NET_TYPE=${NET_TYPE}; N=${N}; k=${k}; ATTACK=${ATTACK}; SEED=${SEED}"
+echo "python ../../python/attack.py ${NET_TYPE} ${N} ${k} ${SEED} ${SEEDP1} ${ATTACK}"
 
 python ../../python/attack.py ${NET_TYPE} ${N} ${k} ${SEED} ${SEEDP1} ${ATTACK}
