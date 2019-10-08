@@ -1,0 +1,8 @@
+#!/bin/bash
+#SBATCH --partition=multi
+#SBATCH --time=4-00:00:00
+#SBATCH --ntasks=1
+#SBATCH --nodes=1
+#SBATCH --cpus-per-task=128
+. /etc/profile
+srun echo $(seq 1 20000) | xargs -P 128 -n 1 bash attack.sh ER 8000 5.00 BtwU
