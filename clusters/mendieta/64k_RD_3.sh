@@ -4,4 +4,4 @@
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=8
 . /etc/profile
-srun echo $(seq 10000 15000) | xargs -P 8 -n 1 bash attack.sh ER 64000 5.00 DegU
+srun echo $(seq 5000 7500) | xargs -P 8 -n 1 bash attack.sh ER 64000 5.00 DegU
