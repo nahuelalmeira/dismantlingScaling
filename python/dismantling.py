@@ -55,6 +55,8 @@ def initial_attack(g, attack, out, random_state=0):
             c_values = g.betweenness(directed=False, nobigint=False)
         elif attack == 'Deg':
             c_values = g.degree()
+        elif attack == 'Eigenvector':
+            c_values = g.eigenvector_centrality(directed=False)
         original_indices = np.argsort(c_values)[::-1]
 
     if out:
@@ -95,6 +97,8 @@ def updated_attack(graph, attack, out=None, random_state=0):
             c_values = g.betweenness(directed=False, nobigint=False)
         elif attack == 'DegU':
             c_values = g.degree()
+        elif attack == 'EigenvectorU':
+            c_values = g.eigenvector_centrality(directed=False)
         idx = np.argmax(c_values)
 
         ## Add index to list
@@ -134,8 +138,8 @@ def get_index_list(G, attack, out=None, random_state=0):
         return 1
 
     supported_attacks = {
-        'initial': ['Ran', 'Deg', 'Btw'],
-        'updated': ['DegU', 'BtwU']
+        'initial': ['Ran', 'Deg', 'Btw', 'Eigenvector'],
+        'updated': ['DegU', 'BtwU', 'EigenvectorU']
     }
 
     if attack in supported_attacks['initial']:
@@ -145,6 +149,17 @@ def get_index_list(G, attack, out=None, random_state=0):
     else:
         print('ERROR: Attack {} not supported.'.format(attack),
               file=sys.stderr)
+
+    return index_list
+
+def get_index_list_nk(G, attack, out=None, random_state=0):
+    """
+    Write to output out index list in order of removal 
+    (it uses the networKit package)
+    TODO: Write function
+    """
+
+    index_list = []
 
     return index_list
 

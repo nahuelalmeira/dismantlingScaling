@@ -3,11 +3,17 @@ import sys
 import tarfile
 import numpy as np
 import igraph as ig
+import networkit as nk
 
-from dismantling import get_index_list
+from dismantling import get_index_list, get_index_list_nk
 from auxiliary import get_base_network_name
 
-supported_attacks = ['Ran', 'Deg', 'DegU', 'Btw', 'BtwU']
+def get_package(attack):
+    if attack in ['Ran', 'Deg', 'DegU', 'Btw', 'BtwU', 'Eigenvector', 'EigenvectorU']:
+        return 'iGraph'
+    return 'networKit'
+
+supported_attacks = ['Ran', 'Deg', 'DegU', 'Btw', 'BtwU', 'Eigenvector', 'EigenvectorU']
 
 net_type = sys.argv[1]
 size = int(sys.argv[2])
@@ -61,11 +67,25 @@ for attack in attacks:
         if os.path.isfile(full_output_name) and overwrite:
             os.remove(full_output_name)
 
-        ## Read network file
-        g = ig.Graph().Read_Edgelist(full_input_name, directed=False)
+        package = get_package(attack)
+        if package == 'iGraph':
 
-        ## Remove network file
-        os.remove(full_input_name)
+            ## Read network file
+            g = ig.Graph().Read_Edgelist(full_input_name, directed=False)
 
-        ## Perform the attack
-        get_index_list(g, attack, full_output_name)
+            ## Remove network file
+            os.remove(full_input_name)
+
+            ## Perform the attack
+            get_index_list(g, attack, full_output_name)
+
+        elif package == 'networKit':
+
+            ## Read network file
+            g = nk.Graph().readGraph(full_input_name, nk.Format.EdgeListSpaceZero)
+
+            ## Remove network file
+            os.remove(full_input_name)
+
+            ## Perform the attack
+            get_index_list_nk(g, attack, full_output_name)
