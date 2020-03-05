@@ -34,6 +34,10 @@ if 'Deg' in sys.argv:
     attacks.append('Deg')
 if 'Ran' in sys.argv:
     attacks.append('Ran')
+if 'Eigenvector' in sys.argv:
+    attacks.append('Eigenvector')
+if 'EigenvectorU' in sys.argv:
+    attacks.append('EigenvectorU')
 
 print('------- Params -------')
 print('net_type =', net_type)

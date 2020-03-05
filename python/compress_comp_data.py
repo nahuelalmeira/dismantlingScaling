@@ -27,6 +27,10 @@ if 'Deg' in sys.argv:
     attacks.append('Deg')
 if 'Ran' in sys.argv:
     attacks.append('Ran')
+if 'Eigenvector' in sys.argv:
+    attacks.append('Eigenvector')
+if 'EigenvectorU' in sys.argv:
+    attacks.append('EigenvectorU')
 
 dir_name = os.path.join('../networks', net_type)
 base_net_name, base_net_name_size = get_base_network_name(net_type, size, param)
