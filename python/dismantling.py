@@ -56,7 +56,9 @@ def initial_attack(g, attack, out, random_state=0):
         elif attack == 'Deg':
             c_values = g.degree()
         elif attack == 'Eigenvector':
-            c_values = g.eigenvector_centrality(directed=False)
+            from igraph import arpack_options
+            arpack_options.maxiter = 300000
+            c_values = g.eigenvector_centrality(directed=False, arpack_options=arpack_options)
         original_indices = np.argsort(c_values)[::-1]
 
     if out:
@@ -98,7 +100,9 @@ def updated_attack(graph, attack, out=None, random_state=0):
         elif attack == 'DegU':
             c_values = g.degree()
         elif attack == 'EigenvectorU':
-            c_values = g.eigenvector_centrality(directed=False)
+            from igraph import arpack_options
+            arpack_options.maxiter = 300000
+            c_values = g.eigenvector_centrality(directed=False, arpack_options=arpack_options)
         idx = np.argmax(c_values)
 
         ## Add index to list
