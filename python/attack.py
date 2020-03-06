@@ -3,7 +3,7 @@ import sys
 import tarfile
 import numpy as np
 import igraph as ig
-import networkit as nk
+
 
 from dismantling import get_index_list, get_index_list_nk
 from auxiliary import get_base_network_name

@@ -8,13 +8,13 @@ import queue
 def get_nn_ball(g, v, l):
     Q = queue.Queue()
     Q.put(v)
-    d = np.zeros(g.vcount(), dtype='int') - 1 
+    d = np.zeros(g.vcount(), dtype='int') - 1
     distance = 0
     d[v] = distance
     ball = []
     while distance < l:
         u = Q.get()
-        
+
         distance += 1
         for nn in g.neighbors(u):
             if d[nn] < 0:
@@ -26,8 +26,8 @@ def get_nn_ball(g, v, l):
 
 def collective_influence(g, l):
     CI = np.zeros(g.vcount(), dtype='int')
-    for v in g.vs():       
-        ball = get_nn_ball(g, v.index, l)  
+    for v in g.vs():
+        ball = get_nn_ball(g, v.index, l)
         nn_degrees = np.array(g.degree(ball))
         print(v.index)
         for nn, d in zip(ball, nn_degrees):
@@ -36,13 +36,13 @@ def collective_influence(g, l):
     return CI
 
 def initial_attack(g, attack, out, random_state=0):
-    
+
     if os.path.isfile(out):
         original_indices = np.loadtxt(out, dtype='int')
         return original_indices
 
     ## Set random seed for reproducibility
-    np.random.seed(random_state)  
+    np.random.seed(random_state)
 
     if attack == 'Ran':
         n = g.vcount()
@@ -67,7 +67,7 @@ def initial_attack(g, attack, out, random_state=0):
     return original_indices
 
 def updated_attack(graph, attack, out=None, random_state=0):
-    
+
     ## Set random seed for reproducibility
     np.random.seed(random_state)
 
@@ -77,13 +77,13 @@ def updated_attack(graph, attack, out=None, random_state=0):
     ## Save original index as a vertex property
     N0 = g.vcount()
     g.vs['name'] = range(N0)
-    
+
     ## List with the node original indices in removal order
     original_indices = []
 
     j = 0
     if out:
-        if os.path.isfile(out) and os.path.getsize(out) > 0: 
+        if os.path.isfile(out) and os.path.getsize(out) > 0:
             oi_values = np.loadtxt(out, dtype='int', comments='\x00')
             g.delete_vertices(oi_values)
             oi_values = np.array(oi_values) ## In case oi_values is one single integer
@@ -110,14 +110,84 @@ def updated_attack(graph, attack, out=None, random_state=0):
         original_indices.append(original_idx)
 
         ## Remove node
-        g.vs[idx].delete()     
+        g.vs[idx].delete()
 
         j += 1
-            
+
         if out:
             f.write('{:d}\n'.format(original_idx))
             f.flush()
-        
+
+    if out:
+        f.close()
+
+    return original_indices
+
+def updated_hybrid_attack(graph, attacks, probabilities, out=None, random_state=0):
+
+    ## Set random seed for reproducibility
+    np.random.seed(random_state)
+
+    ## Create a copy of graph so as not to modify the original
+    g = graph.copy()
+
+    if 'EigenvalueU' in attacks:
+        from igraph import arpack_options
+        arpack_options.maxiter = 300000
+
+    ## Save original index as a vertex property
+    N0 = g.vcount()
+    g.vs['name'] = range(N0)
+
+    assert(len(attacks) == len(probabilities))
+
+    ## Normalize probabilities
+    probabilities = np.array(probabilities, dtype='float')
+    probabilities = probabilities / np.sum(probabilities)
+
+    ## List with the node original indices in removal order
+    original_indices = []
+
+    j = 0
+    if out:
+        if os.path.isfile(out) and os.path.getsize(out) > 0:
+            oi_values = np.loadtxt(out, dtype='int', comments='\x00')
+            g.delete_vertices(oi_values)
+            oi_values = np.array(oi_values) ## In case oi_values is one single integer
+            j += len(oi_values)
+            np.savetxt(out, oi_values, fmt='%d')
+
+        f = open(out, 'a+')
+
+    while j < N0:
+
+        attack = np.random.choice(attacks, 1, p=probabilities)[0]
+
+        if attack == 'Ran':
+            idx = np.random.randint(0, g.vcount())
+        else:
+            ## Identify node to be removed
+            if attack == 'BtwU':
+                c_values = g.betweenness(directed=False, nobigint=False)
+            elif attack == 'DegU':
+                c_values = g.degree()
+            elif attack == 'EigenvectorU':
+                c_values = g.eigenvector_centrality(directed=False, arpack_options=arpack_options)
+            idx = np.argmax(c_values)
+
+        ## Add index to list
+        original_idx = g.vs[idx]['name']
+        original_indices.append(original_idx)
+
+        ## Remove node
+        g.vs[idx].delete()
+
+        j += 1
+
+        if out:
+            f.write('{:d}\n'.format(original_idx))
+            f.flush()
+
     if out:
         f.close()
 
@@ -126,7 +196,7 @@ def updated_attack(graph, attack, out=None, random_state=0):
 
 def get_index_list(G, attack, out=None, random_state=0):
     """
-    Write to output out index list in order of removal 
+    Write to output out index list in order of removal
     """
 
     if G.is_directed():
@@ -156,9 +226,28 @@ def get_index_list(G, attack, out=None, random_state=0):
 
     return index_list
 
+
+def get_index_list_hybrid(G, attacks, probabilities, out=None, random_state=0):
+    """
+    Write to output out index list in order of removal
+    """
+
+    if G.is_directed():
+        print('ERROR: G must be undirected.', file=sys.stderr)
+        return 1
+
+    if not G.is_simple():
+        print('ERROR: G must be simple.', file=sys.stderr)
+        return 1
+
+    index_list = updated_hybrid_attack(G, attacks, probabilities, out, random_state=random_state)
+
+    return index_list
+
+
 def get_index_list_nk(G, attack, out=None, random_state=0):
     """
-    Write to output out index list in order of removal 
+    Write to output out index list in order of removal
     (it uses the networKit package)
     TODO: Write function
     """
@@ -234,7 +323,7 @@ if __name__ == '__main__':
     assert(4 in oi_list[4:])
 
     print('Testing ER 500')
-    g = ig.Graph().Read_Edgelist('./test/ER_N500_p0.008_00000_gcc.txt', 
+    g = ig.Graph().Read_Edgelist('./test/ER_N500_p0.008_00000_gcc.txt',
                                  directed=False)
     oi_list = get_index_list(g, 'Deg')
     oi_list2 = np.loadtxt('./test/oi_list_ER_N500_p0.008_00000_Deg.txt', dtype='int')
