@@ -97,6 +97,9 @@ def updated_attack(graph, attack, out=None, random_state=0):
         ## Identify node to be removed
         if attack == 'BtwU':
             c_values = g.betweenness(directed=False, nobigint=False)
+        elif 'BtwU_cutoff' in attack:
+            cutoff = int(attack.split('cutoff')[1])
+            c_values = g.betweenness(directed=False, nobigint=False, cutoff=cutoff)
         elif attack == 'DegU':
             c_values = g.degree()
         elif attack == 'EigenvectorU':
@@ -108,6 +111,54 @@ def updated_attack(graph, attack, out=None, random_state=0):
         ## Add index to list
         original_idx = g.vs[idx]['name']
         original_indices.append(original_idx)
+
+        ## Remove node
+        g.vs[idx].delete()
+
+        j += 1
+
+        if out:
+            f.write('{:d}\n'.format(original_idx))
+            f.flush()
+
+    if out:
+        f.close()
+
+    return original_indices
+
+def updated_local_attack(graph, attack, out=None, random_state=0):
+
+    ## Set random seed for reproducibility
+    np.random.seed(random_state)
+
+    ## Create a copy of graph so as not to modify the original
+    g = graph.copy()
+
+    ## Save original index as a vertex property
+    N0 = g.vcount()
+    g.vs['name'] = range(N0)
+
+    ## List with the node original indices in removal order
+    original_indices = []
+
+    j = 0
+    if out:
+        f = open(out, 'a+')
+
+    c_values = g.betweenness(directed=False, nobigint=False)
+    g.vs['centrality'] = c_values
+    while j < N0:
+
+        ## Identify node to be removed
+        idx = np.argmax(g.vs['centrality'])
+
+        ## Add index to list
+        original_idx = g.vs[idx]['name']
+        original_indices.append(original_idx)
+
+        ## Update centrality of neighbors
+        nn_indices = [w.index for w in g.vs[idx].neighbors()]
+
 
         ## Remove node
         g.vs[idx].delete()
@@ -213,13 +264,17 @@ def get_index_list(G, attack, out=None, random_state=0):
 
     supported_attacks = {
         'initial': ['Ran', 'Deg', 'Btw', 'Eigenvector'],
-        'updated': ['DegU', 'BtwU', 'EigenvectorU']
+        'updated': ['DegU', 'BtwU', 'EigenvectorU'] + \
+                   ['BtwU_cutoff{}'.format(i) for i in range(2, 100)],
+        'updated_local': ['BtwU1nn']
     }
 
     if attack in supported_attacks['initial']:
         index_list = initial_attack(G, attack, out, random_state=random_state)
     elif attack in supported_attacks['updated']:
         index_list = updated_attack(G, attack, out, random_state=random_state)
+    elif attack in supported_attacks['updated_local']:
+        index_list = updated_local_attack(G, attack, out, random_state=random_state)
     else:
         print('ERROR: Attack {} not supported.'.format(attack),
               file=sys.stderr)
