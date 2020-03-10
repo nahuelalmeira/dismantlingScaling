@@ -1,7 +1,7 @@
 import os
 import sys
 import tarfile
-from auxiliary import get_base_network_name
+from auxiliary import get_base_network_name, supported_attacks
 
 net_type = sys.argv[1]
 size = int(sys.argv[2])
@@ -17,20 +17,9 @@ if net_type in ['ER', 'RR', 'BA']:
     N = int(size)
 
 attacks = []
-if 'BtwU' in sys.argv:
-    attacks.append('BtwU')
-if 'DegU' in sys.argv:
-    attacks.append('DegU')
-if 'Btw' in sys.argv:
-    attacks.append('Btw')
-if 'Deg' in sys.argv:
-    attacks.append('Deg')
-if 'Ran' in sys.argv:
-    attacks.append('Ran')
-if 'Eigenvector' in sys.argv:
-    attacks.append('Eigenvector')
-if 'EigenvectorU' in sys.argv:
-    attacks.append('EigenvectorU')
+for attack in supported_attacks:
+    if attack in sys.argv:
+        attacks.append(attack)
 
 dir_name = os.path.join('../networks', net_type)
 base_net_name, base_net_name_size = get_base_network_name(net_type, size, param)

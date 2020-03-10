@@ -4,36 +4,8 @@ import numpy as np
 import igraph as ig
 import queue
 
-
-def get_nn_ball(g, v, l):
-    Q = queue.Queue()
-    Q.put(v)
-    d = np.zeros(g.vcount(), dtype='int') - 1
-    distance = 0
-    d[v] = distance
-    ball = []
-    while distance < l:
-        u = Q.get()
-
-        distance += 1
-        for nn in g.neighbors(u):
-            if d[nn] < 0:
-                d[nn] = distance
-                Q.put(nn)
-                ball.append(nn)
-    return ball
-
-
-def collective_influence(g, l):
-    CI = np.zeros(g.vcount(), dtype='int')
-    for v in g.vs():
-        ball = get_nn_ball(g, v.index, l)
-        nn_degrees = np.array(g.degree(ball))
-        print(v.index)
-        for nn, d in zip(ball, nn_degrees):
-            print(nn, d)
-        CI[v.index] = (g.degree(v.index) - 1) * np.sum(nn_degrees-1)
-    return CI
+sys.path.append('./fast')
+from functions import RD_attack, RCI_attack, graph_to_nn_set
 
 def initial_attack(g, attack, out, random_state=0):
 
@@ -123,6 +95,33 @@ def updated_attack(graph, attack, out=None, random_state=0):
 
     if out:
         f.close()
+
+    return original_indices
+
+def fast_updated_attack(g, attack, out=None, random_state=0):
+
+    ## Set random seed for reproducibility
+    np.random.seed(random_state)
+
+    ## Save original index as a vertex property
+    N0 = g.vcount()
+    
+    nn_set = graph_to_nn_set(g)
+
+    if out:
+        if os.path.isfile(out) and os.path.getsize(out) > 0:
+            oi_values = np.loadtxt(out, dtype='int', comments='\x00')
+            oi_values = np.array(oi_values) ## In case oi_values is one single integer
+            if len(oi_values) < N0:
+                os.remove(out)
+
+    if attack == 'DegU':
+        original_indices = RD_attack(nn_set)
+    elif attack == 'CIU':
+        original_indices = RCI_attack(nn_set)
+
+    if out:
+        np.savetxt(out, original_indices, fmt='%d')
 
     return original_indices
 
@@ -266,7 +265,8 @@ def get_index_list(G, attack, out=None, random_state=0):
         'initial': ['Ran', 'Deg', 'Btw', 'Eigenvector'],
         'updated': ['DegU', 'BtwU', 'EigenvectorU'] + \
                    ['BtwU_cutoff{}'.format(i) for i in range(2, 100)],
-        'updated_local': ['BtwU1nn']
+        'updated_local': ['BtwU1nn'],
+        'fast_updated': ['DegU', 'CIU']
     }
 
     if attack in supported_attacks['initial']:
@@ -275,6 +275,8 @@ def get_index_list(G, attack, out=None, random_state=0):
         index_list = updated_attack(G, attack, out, random_state=random_state)
     elif attack in supported_attacks['updated_local']:
         index_list = updated_local_attack(G, attack, out, random_state=random_state)
+    elif attack in supported_attacks['fast_updated']:
+        index_list = fast_updated_attack(G, attack, out, random_state=random_state)
     else:
         print('ERROR: Attack {} not supported.'.format(attack),
               file=sys.stderr)

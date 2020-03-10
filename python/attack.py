@@ -6,13 +6,7 @@ import igraph as ig
 
 
 from dismantling import get_index_list
-from auxiliary import get_base_network_name
-
-supported_attacks = [
-    'Ran', 'Deg', 'DegU', 'Btw', 'BtwU', 'Eigenvector', 'EigenvectorU',
-    'BtwU1nn'
-]
-supported_attacks += ['BtwU_cutoff{}'.format(l) for l in range(2, 100)]
+from auxiliary import get_base_network_name, supported_attacks
 
 net_type = sys.argv[1]
 size = int(sys.argv[2])

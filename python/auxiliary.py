@@ -21,3 +21,9 @@ def get_base_network_name(net_type, size, param):
         base_net_name = ''
     
     return base_net_name, base_net_name_size
+
+supported_attacks = [
+    'Ran', 'Deg', 'DegU', 'Btw', 'BtwU', 'Eigenvector', 'EigenvectorU',
+    'BtwU1nn', 'CIU'
+]
+supported_attacks += ['BtwU_cutoff{}'.format(l) for l in range(2, 100)]

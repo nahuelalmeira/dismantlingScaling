@@ -23,21 +23,16 @@ verbose = False
 if 'verbose' in sys.argv:
     verbose = True
 
+supported_attacks = [
+    'Ran', 'Deg', 'DegU', 'Btw', 'BtwU', 'Eigenvector', 'EigenvectorU',
+    'BtwU1nn', 'CIU'
+]
+supported_attacks += ['BtwU_cutoff{}'.format(l) for l in range(2, 100)]
+
 attacks = []
-if 'BtwU' in sys.argv:
-    attacks.append('BtwU')
-if 'DegU' in sys.argv:
-    attacks.append('DegU')
-if 'Btw' in sys.argv:
-    attacks.append('Btw')
-if 'Deg' in sys.argv:
-    attacks.append('Deg')
-if 'Ran' in sys.argv:
-    attacks.append('Ran')
-if 'Eigenvector' in sys.argv:
-    attacks.append('Eigenvector')
-if 'EigenvectorU' in sys.argv:
-    attacks.append('EigenvectorU')
+for attack in supported_attacks:
+    if attack in sys.argv:
+        attacks.append(attack)
 
 print('------- Params -------')
 print('net_type =', net_type)
