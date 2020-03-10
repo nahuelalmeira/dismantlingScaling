@@ -18,6 +18,12 @@ BASE_NET_DIR="${BASE_DIR}/${BASE_NET}/${BASE_NET}_N${N}"
 NET_NAME="${BASE_NET}_N${N}_${SEED}"
 NET_DIR="${BASE_NET_DIR}/${NET_NAME}"
 NETWORK="${NET_DIR}/${NET_NAME}.txt"
+NETWORK_TAR="${NET_DIR}/${NET_NAME}.tar.gz"
+
+if [ -f "${NETWORK_TAR}" ]; then
+    #echo "Extracting data from ${NETWORK_TAR}"
+    tar --directory=${NET_DIR} -xzf ${NETWORK_TAR}
+fi
 
 ORDER="${NET_DIR}/${ATTACK}/oi_list.txt"
 echo ${ORDER}
@@ -38,6 +44,16 @@ if [ ! -f "${ORDER}" ]; then
     exit 0
 fi
 
+TAR_FILE="${NET_DIR}/${ATTACK}/comp_data.tar.gz"
+if [ -f "${TAR_FILE}" ]; then
+    if [ "${OVERWRITE}" == "True" ]; then
+        rm ${TAR_FILE}
+    else
+        echo "File ${TAR_FILE} already exist"
+        exit 0
+    fi
+fi
+
 OUTPUT="${NET_DIR}/${ATTACK}/comp_data.txt"
 if [ -f "${OUTPUT}" ]; then
     if [ ! -s "${OUTPUT}" ]; then
@@ -54,3 +70,7 @@ if [ "${OVERWRITE}" != "True" ]; then
 fi
 
 ../perc_v2 $NETWORK $ORDER $OUTPUT 
+
+if [ -f "${NETWORK_TAR}" ]; then
+    rm ${NETWORK}
+fi
