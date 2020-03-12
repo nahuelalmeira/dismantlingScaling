@@ -22,6 +22,14 @@ def edgelist_to_nn_set(edgelist):
 
     return nn_set
 
+def graph_to_nn_set(g):
+    
+    edgelist = []
+    for e in g.es():
+        edgelist.append(e.tuple)
+    nn_set = edgelist_to_nn_set(edgelist)
+    return nn_set
+
 ################################
 
 ## Percolation
@@ -367,7 +375,7 @@ def get_CI(nn_set, l):
 
     CI_values = []
     for i, k_i in enumerate(deg_seq):
-        ball_nodes = get_neighbors_ball(nn_set, i, l)
+        ball_nodes = get_neighbors_ball_border(nn_set, i, l)
         ball_deg = sum([(deg_seq[n] - 1) for n in ball_nodes])
         CI_values.append((k_i - 1) * ball_deg)
 
@@ -404,11 +412,83 @@ def create_CI_struct(nn_set, l):
 
     return CI_struct
 
-def update_ci(v, w, nn_set, deg_seq, CI_seq, l):
+def update_ci_l2(v, w, nn_set, deg_seq, CI_seq):
 
     kv = deg_seq[v]
     kw = deg_seq[w]
     ci_w = CI_seq[w]
+
+    first_neighbors = get_neighbors_ball_border(nn_set, w, 1)
+    second_neighbors = get_neighbors_ball_border(nn_set, w, 2)
+    third_neighbors = get_neighbors_ball_border(nn_set, w, 3)
+    
+    if v in first_neighbors:
+        if kw <= 1:
+            new_ci_w = 0
+        else:
+            initial_ball = ci_w / (kw - 1)
+            S2_plus_S3 = second_neighbors.intersection(nn_set[v])
+
+            S2 = set([])
+            for u in S2_plus_S3:
+                for r in first_neighbors.difference(set([v])):
+                    if u in nn_set[r]:
+                        S2.add(u)
+
+            S3 = S2_plus_S3.difference(S2)
+
+            sum_S3 = sum([deg_seq[u] - 1 for u in S3])
+
+            final_ball = initial_ball - sum_S3
+
+            new_ci_w = ci_w + (kw-1) * (final_ball - initial_ball) - final_ball
+    elif v in second_neighbors:
+        new_ci_w = ci_w - (kw-1)*(kv-1) - (kw-1)*len(second_neighbors.intersection(nn_set[v]))
+    elif v in third_neighbors:
+        new_ci_w = ci_w - (kw-1) * len(second_neighbors.intersection(nn_set[v]))
+    else:
+        new_ci_w = ci_w
+
+    return int(new_ci_w)
+
+def update_ci_l1(v, w, nn_set, deg_seq, CI_seq):
+
+    kv = deg_seq[v]
+    kw = deg_seq[w]
+    ci_w = CI_seq[w]
+
+    common_nn = nn_set[v].intersection(nn_set[w])
+
+    if w in nn_set[v]: ## Case w nearest neighbor of v
+        w_neighbors = nn_set[w].difference(set([v]))
+
+        s = 0
+        for w_nn in w_neighbors:
+            k_nn = deg_seq[w_nn]
+            s += (k_nn - 1)
+
+        new_ci_w = ci_w - (kw-1)*(kv-1) - s - (kw-2)*len(common_nn)
+
+    else: ## Case w not nearest neighbor of v.
+        new_ci_w = ci_w - (kw-1)*len(common_nn)
+
+    return new_ci_w
+
+def update_ci(v, w, nn_set, deg_seq, CI_seq, l):
+    
+    if l == 1:
+        return update_ci_l1(v, w, nn_set, deg_seq, CI_seq)
+    if l == 2:
+        return update_ci_l2(v, w, nn_set, deg_seq, CI_seq)
+
+
+def _update_ci(v, w, nn_set, deg_seq, CI_seq, l):
+
+    kv = deg_seq[v]
+    kw = deg_seq[w]
+    ci_w = CI_seq[w]
+
+    sum_ball = ci_w / (kw - 1)
 
     common_nn = nn_set[v].intersection(nn_set[w])
 
@@ -438,10 +518,6 @@ def update_ci(v, w, nn_set, deg_seq, CI_seq, l):
             S2 = S2.intersection(nn_set[v]).difference(set([w]))
             S3 = nn_set[v].difference(S1.union(S2).union([w]))
             
-            sum1 = 0
-            for w_nn in nn_set[w].difference(set([v])):
-                k_nn = deg_seq[w_nn]
-                sum1 += (k_nn - 1)
             sum2 = 0
             for w_sn in set(get_neighbors_ball_border(nn_set, w, 2)):
                 k_sn = deg_seq[w_sn]
@@ -452,17 +528,21 @@ def update_ci(v, w, nn_set, deg_seq, CI_seq, l):
                 k = deg_seq[r]
                 sum3 += (k - 1)
 
-            new_ci_w = ci_w - (kw-1)*(kv-1) - sum1 - sum2 - (kw-2)*(len(S1) + len(S2) + sum3)
+            new_ci_w = (kw - 2) * (sum_ball - len(S2) - sum3)
         elif w in set(get_neighbors_ball_border(nn_set, v, 2)):
-            #print('2 nn', common_second_neighbors)
-            new_ci_w = ci_w - (kw-1)*(kv-1) - (kw-1)*(len(common_nn) + len(common_second_neighbors))
+            S1 = nn_set[v].intersection(nn_set[w])
+            S2 = set([])
+            for u in nn_set[w].difference(S1).difference(set([v])):
+                S2 = S2.union(nn_set[u])
+            S2 = S2.intersection(nn_set[v]).difference(set([w]))
+            #new_ci_w = ci_w - (kw-1)*(kv-1) - (kw-1)*(len(common_nn) + len(common_second_neighbors))
+            new_ci_w = (kw - 1) * (sum_ball - len(S2))
         else:
-            #print('3 nn')
             new_ci_w = ci_w - (kw-1)*len(common_second_neighbors)
 
     return new_ci_w  
 
-def _update_ci(v, w, nn_set, deg_seq, CI_seq, l):
+def __update_ci(v, w, nn_set, deg_seq, CI_seq, l):
 
     kv = deg_seq[v]
     kw = deg_seq[w]

@@ -118,7 +118,9 @@ def fast_updated_attack(g, attack, out=None, random_state=0):
     if attack == 'DegU':
         original_indices = RD_attack(nn_set)
     elif attack == 'CIU':
-        original_indices = RCI_attack(nn_set)
+        original_indices = RCI_attack(nn_set, l=1)
+    elif attack == 'CIU2':
+        original_indices = RCI_attack(nn_set, l=2)
 
     if out:
         np.savetxt(out, original_indices, fmt='%d')
@@ -266,7 +268,7 @@ def get_index_list(G, attack, out=None, random_state=0):
         'updated': ['DegU', 'BtwU', 'EigenvectorU'] + \
                    ['BtwU_cutoff{}'.format(i) for i in range(2, 100)],
         'updated_local': ['BtwU1nn'],
-        'fast_updated': ['DegU', 'CIU']
+        'fast_updated': ['DegU', 'CIU', 'CIU2']
     }
 
     if attack in supported_attacks['initial']:
