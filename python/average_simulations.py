@@ -4,7 +4,7 @@ import tarfile
 import igraph as ig
 import numpy as np
 import pandas as pd
-from auxiliary import get_base_network_name
+from auxiliary import get_base_network_name, supported_attacks
 
 net_type = sys.argv[1]
 size = int(sys.argv[2])
@@ -22,12 +22,6 @@ if 'overwrite' in sys.argv:
 verbose = False
 if 'verbose' in sys.argv:
     verbose = True
-
-supported_attacks = [
-    'Ran', 'Deg', 'DegU', 'Btw', 'BtwU', 'Eigenvector', 'EigenvectorU',
-    'BtwU1nn', 'CIU'
-]
-supported_attacks += ['BtwU_cutoff{}'.format(l) for l in range(2, 100)]
 
 attacks = []
 for attack in supported_attacks:
