@@ -12,7 +12,7 @@ param = sys.argv[3]
 min_seed = int(sys.argv[4])
 max_seed = int(sys.argv[5])
 
-if net_type in ['ER', 'RR', 'BA']:
+if net_type in ['ER', 'RR', 'BA', 'MR', 'DT']:
     N = int(size)
 
 overwrite = False

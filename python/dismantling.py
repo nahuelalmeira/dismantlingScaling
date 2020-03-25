@@ -105,7 +105,7 @@ def fast_updated_attack(g, attack, out=None, random_state=0):
 
     ## Save original index as a vertex property
     N0 = g.vcount()
-    
+
     nn_set = graph_to_nn_set(g)
 
     if out:
@@ -265,7 +265,7 @@ def get_index_list(G, attack, out=None, random_state=0):
 
     supported_attacks = {
         'initial': ['Ran', 'Deg', 'Btw', 'Eigenvector'],
-        'updated': ['DegU', 'BtwU', 'EigenvectorU'] + \
+        'updated': ['BtwU', 'EigenvectorU'] + \
                    ['BtwU_cutoff{}'.format(i) for i in range(2, 100)],
         'updated_local': ['BtwU1nn'],
         'fast_updated': ['DegU', 'CIU', 'CIU2']
