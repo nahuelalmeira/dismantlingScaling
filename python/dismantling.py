@@ -4,7 +4,7 @@ import numpy as np
 import igraph as ig
 import queue
 
-sys.path.append('./fast')
+sys.path.append(os.path.join(os.path.dirname(__file__), 'fast'))
 from functions import RD_attack, RCI_attack, graph_to_nn_set
 
 def initial_attack(g, attack, out, random_state=0):
