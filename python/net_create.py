@@ -5,7 +5,7 @@ import tarfile
 import numpy as np
 import igraph as ig
 
-from auxiliary import get_base_network_name, proximity_models
+from auxiliary import get_base_network_name
 
 from planar import create_proximity_graph
 
@@ -38,7 +38,7 @@ for seed in seeds:
     tar_file_name = base_net_name_size + '_{:05d}.tar.gz'.format(seed)
     full_tar_file_name = os.path.join(net_dir_name, tar_file_name)
 
-    if net_type in proximity_models:
+    if net_type == 'DT':
         position_file_name = 'position.txt'
         full_position_file_name = os.path.join(net_dir_name, position_file_name)
 
