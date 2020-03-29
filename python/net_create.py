@@ -1,19 +1,22 @@
 import os
 import sys
-import pickle
 import pathlib
+import tarfile
 import numpy as np
 import igraph as ig
 
-from auxiliary import get_base_network_name
+from auxiliary import get_base_network_name, proximity_models
 
-from planar import create_points, distance, get_mst, create_dt_graph, create_mr_graph
+from planar import create_proximity_graph
 
 net_type = sys.argv[1]
 size = int(sys.argv[2])
 param = sys.argv[3]
 min_seed = int(sys.argv[4])
 max_seed = int(sys.argv[5])
+compress = True
+if 'compress_false' in sys.argv:
+    compress = False
 
 if 'overwrite' in sys.argv:
     overwrite = True
@@ -34,6 +37,10 @@ for seed in seeds:
 
     tar_file_name = base_net_name_size + '_{:05d}.tar.gz'.format(seed)
     full_tar_file_name = os.path.join(net_dir_name, tar_file_name)
+
+    if net_type in proximity_models:
+        position_file_name = 'position.txt'
+        full_position_file_name = os.path.join(net_dir_name, position_file_name)
 
     if not overwrite:
         if os.path.isfile(full_name) or os.path.isfile(full_tar_file_name):
@@ -56,28 +63,35 @@ for seed in seeds:
         G = ig.Graph().Barabasi(N, m)
     elif net_type == 'MR':
         N = int(size)
-
-        points = create_points(N)
-        dt_edgelist, tri = create_dt_graph(points)
-        mst_edgelist = get_mst(dt_edgelist, points)
-
-        distances = []
-        for edge in mst_edgelist:
-            s, t = edge
-            if s < t:
-                d = distance(points, s, t)
-                distances.append(d)
-
-        mr_distance = np.max(distances)
-
-        edgelist = create_mr_graph(points, mr_distance)
-
-    elif net_type == 'DT':
+        if param == 'rMST':
+            G = create_proximity_graph(net_type, N=N, random_seed=seed)
+        else:
+            r = float(param)
+            G = create_proximity_graph(net_type, N=N, r=r, random_seed=seed)
+    elif net_type in ['DT', 'GG', 'RN']:
         N = int(size)
-        points = create_points(N)
-        edgelist, tri = create_dt_graph(points)
+        G = create_proximity_graph(net_type, N=N, random_seed=seed)
 
-    if net_type in ['ER', 'BA', 'RR']:
-        G.write_edgelist(full_name)
-    else:
-        np.savetxt(full_name, edgelist, fmt='%d')
+    G.write_edgelist(full_name)
+    if net_type == 'DT':
+        points = G.vs['position']
+        np.savetxt(full_position_file_name, points)
+
+    if compress:
+
+        ## Compress network file
+        tar = tarfile.open(full_tar_file_name, 'w:gz')
+        tar.add(full_name, arcname=output_name)
+        tar.close()
+
+        ## Remove network file
+        os.remove(full_name)
+
+        if net_type == 'DT':
+            ## Compress network file
+            tar = tarfile.open(os.path.join(net_dir_name, 'position.tar.gz'), 'w:gz')
+            tar.add(full_position_file_name, arcname='position.txt')
+            tar.close()
+
+            ## Remove network file
+            os.remove(full_position_file_name)

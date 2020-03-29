@@ -16,6 +16,10 @@ def get_base_network_name(net_type, size, param):
         base_net_name = 'MR_rMST'
     elif net_type == 'DT':
         base_net_name = 'DT_param'
+    elif net_type == 'GG':
+        base_net_name = 'GG_param'
+    elif net_type == 'RN':
+        base_net_name = 'RN_param'
     else:
         print('ERROR: net_type not supported', file=sys.stderr)
         base_net_name = ''
