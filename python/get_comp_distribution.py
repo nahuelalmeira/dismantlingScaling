@@ -38,7 +38,7 @@ if include_gcc:
 else:
     name = 'comp_sizes_{}_f{}_seeds.txt'.format(attack, str_f)
 
-seed_file = os.path.join(dir_name, base_net_name, base_net_name_size,name)
+seed_file = os.path.join(dir_name, base_net_name, base_net_name_size, name)
 
 if os.path.isfile(seed_file):
     if overwrite:
@@ -50,7 +50,12 @@ if os.path.isfile(seed_file):
 else:
     past_seeds = np.array([])
 
-components_file = os.path.join(dir_name, base_net_name, base_net_name_size, 'comp_sizes_{}_f{}.txt'.format(attack, str_f))
+if include_gcc:
+    name = 'comp_sizes_gcc_{}_f{}.txt'.format(attack, str_f)
+else:
+    name = 'comp_sizes_{}_f{}.txt'.format(attack, str_f)
+
+components_file = os.path.join(dir_name, base_net_name, base_net_name_size, name)
 if os.path.isfile(components_file):
     if overwrite:
         os.remove(components_file)
