@@ -23,14 +23,22 @@ verbose = False
 if 'verbose' in sys.argv:
     verbose = True
 
+include_gcc = False
+if 'gcc' in sys.argv:
+    include_gcc = True
+
 dir_name = os.path.join('../networks', net_type)
 base_net_name, base_net_name_size = get_base_network_name(net_type, size, param)
 base_net_dir = os.path.join(dir_name, base_net_name, base_net_name_size)
 
 seeds = range(max_seed)
 
-seed_file = os.path.join(dir_name, base_net_name, base_net_name_size, 
-                         'comp_sizes_{}_f{}_seeds.txt'.format(attack, str_f))
+if include_gcc:
+    name = 'comp_sizes_gcc_{}_f{}_seeds.txt'.format(attack, str_f)
+else:
+    name = 'comp_sizes_{}_f{}_seeds.txt'.format(attack, str_f)
+
+seed_file = os.path.join(dir_name, base_net_name, base_net_name_size,name)
 
 if os.path.isfile(seed_file):
     if overwrite:
@@ -66,8 +74,8 @@ for seed in seeds:
     tar = tarfile.open(full_tar_input_name, 'r:gz')
     tar.extractall(net_dir)
     tar.close()
-    
-    input_name = net_name + '.txt'   
+
+    input_name = net_name + '.txt'
     full_input_name = os.path.join(net_dir, input_name)
 
     data_dir = os.path.join(net_dir, attack)
@@ -80,25 +88,25 @@ for seed in seeds:
     except:
         print('Cannot read file from seed', seed)
         continue
-    
+
     new_seeds.append(seed)
 
-    g = ig.Graph().Read_Edgelist(full_input_name, directed=False)   
+    g = ig.Graph().Read_Edgelist(full_input_name, directed=False)
 
     ## Remove network file
-    os.remove(full_input_name)     
+    os.remove(full_input_name)
 
     if not g.is_simple():
         print('Network "' + net_name + '" will be considered as simple.')
         g.simplify()
-        
+
     if g.is_directed():
         print('Network "' + net_name + '" will be considered as undirected.')
         g.to_undirected()
 
     N0 = g.vcount()
     g.vs['original_index'] = range(N0)
-    
+
     f = float(str_f)
 
     try:
@@ -114,7 +122,10 @@ for seed in seeds:
     components = g.components(mode='WEAK')
     Ngcc = components.giant().vcount()
     comp_sizes = [len(c) for c in components]
-    comp_sizes.remove(Ngcc)
+
+    if not include_gcc: ## Do not count GCC
+        comp_sizes.remove(Ngcc)
+
     with open(components_file, 'a') as c_file:
         for c_size in comp_sizes:
             c_file.write('{:d}\n'.format(c_size))
