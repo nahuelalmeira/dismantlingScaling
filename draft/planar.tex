@@ -1,0 +1,101 @@
+\documentclass{article}
+    % General document formatting
+    \usepackage[margin=0.7in]{geometry}
+    \usepackage[parfill]{parskip}
+    \usepackage[utf8]{inputenc}
+    
+    % Related to math
+    \usepackage{amsmath,amssymb,amsfonts,amsthm}
+
+\usepackage{graphicx}
+\graphicspath{{figs/}}
+
+\begin{document}
+
+\section{Introduction}
+
+\begin{equation}
+y(L, f) = L^{a} \tilde{F}\bigg[L^{1/\nu} (f-f_c)\bigg],
+\end{equation}
+
+$L = \sqrt{N}$.
+
+Exponentes en 2D
+
+\begin{align}
+\dfrac{\gamma}{2\nu} &= 0.896 \\
+1-\dfrac{\beta}{2\nu} &= 0.948
+\end{align}
+
+\section{Resultados}
+
+%\begin{figure}
+%\centering
+%\includegraphics[scale=0.25]{percolation_two_sizes_new_MR.pdf}
+%\includegraphics[scale=0.25]{meanS_two_sizes_new_MR.pdf}
+%\caption{Minimum-Radius graph}
+%\end{figure}
+
+%\begin{figure}
+%\centering
+%\includegraphics[scale=0.25]{percolation_two_sizes_new_DT.pdf}
+%\includegraphics[scale=0.25]{meanS_two_sizes_new_DT.pdf}
+%\caption{Delaunay triangulation}
+%\end{figure}
+
+\begin{figure}
+\centering
+\includegraphics[scale=0.25]{fig1_DT.pdf}
+\caption{Oder parameter, susceptibility and size of second lurgest cluster for RB and RB with different cutoffs, for different sizes.}
+\end{figure}
+
+\begin{figure}
+\centering
+\includegraphics[scale=0.25]{order_par_and_susceptibility_RBl_DT.pdf}
+\caption{Oder parameter, susceptibility and size of second lurgest cluster for RB and RB with different cutoffs. $N = 1024$.}
+\end{figure}
+
+%\begin{figure}
+%\includegraphics[scale=0.3]{norrenbrock_fig1.pdf}
+%\includegraphics[scale=0.3]{norrenbrock_fig1_2.pdf}
+%\end{figure}
+
+%\begin{figure}
+%\includegraphics[scale=0.3]{meanS.pdf}
+%\includegraphics[scale=0.3]{meanS_2.pdf}
+%\end{figure}
+
+\begin{figure}
+\centering
+\includegraphics[scale=0.3]{comp_sizes_DT.pdf}
+\caption{Finite component size distribution near the percolation threshold for RB and RB with different cutoffs. For RB, the giant cluster is also considered. Each histogram is generated over an average of $N_r = 1000$ network realizations. The dashed line corresponds to $p(s) \sim s^{-\tau}$, with $\tau = 0.2055$, which is the correspondig value for random percolation.}
+\end{figure}
+
+\begin{figure}
+\centering
+\includegraphics[scale=0.3]{peak_scaling_DT.pdf}
+\caption{Scaling for the peak in the susceptibility and second largest cluster for RB and RB with different cutoffs. }
+\end{figure}
+
+\begin{figure}
+\centering
+\includegraphics[scale=0.3]{peak_shifting_RBl_DT.pdf}
+\caption{(Upper panels) Shift of the position of the susceptibility and second largest cluster peak for the RB attacks with cutoffs. Dashed lines correspond to the position of the peak for the RB attack. (Lower panels) Difference between the peak for RB attack with cutoff and RB. The $x$ axis is scaled by the average initial diameter $D$ of the networks for each size.}
+\end{figure}
+
+\begin{figure}
+\centering
+\includegraphics[scale=0.3]{nu_scaling_RB_DT.pdf}
+\caption{Scaling for the shift of the position of the susceptibility and second largest cluster peak for RB attack.}
+\end{figure}
+
+\begin{figure}
+\centering
+\includegraphics[scale=0.3]{Sgcc_scaling_RB_DT.pdf}
+\caption{Collapse for the order parameter $S_1$ using different values of $\nu$ and considering $f_c^{\mathrm{(RB)}} = 0$.}
+\end{figure}
+
+
+
+
+\end{document}
