@@ -14,11 +14,47 @@
 
 \section{Introduction}
 
-\begin{equation}
-y(L, f) = L^{a} \tilde{F}\bigg[L^{1/\nu} (f-f_c)\bigg],
-\end{equation}
+\subsection{Delaunay triangulation}
 
-$L = \sqrt{N}$.
+There are several models of spatial networks. Many of them are described in the review \cite{Barthelemy2011}. In another recent review \cite{Barthelemy2018}, Barth\'elemy explores different kind of transitions in spatial networks.
+
+The Delaunay triangulation (DT) is the dual of the Voronoi-Tessellation. Given a set of points $V$ in a d-dimentional space, a link between two nodes $u,\;v\in V$ is present if and only if there exist a d-dimentional sphere which embeds $u$ and $v$ but no other points. Several properties of the DT have been studied, such as extreme values \cite{Lee1980}, average degree and distance [CITE], ... [AGREGAR MAS COSAS]. Although a naive algorithm for constructing a Delaunay triangulation is $\mathcal{O}(N^3)$, the complexity can be reduced to $\mathcal{O}(N\log N)$, as shown in \cite{Lee1980}. In this work, we used the Qhull computational geometrical library \footnote{www.qhull.org}, together with the Python SciPy package.
+
+
+
+\subsection{Betweenness centrality}
+
+Betweenness centrality (BC) was independently proposed by \cite{Freeman1977ABetweenness} and [CITE]. The computational complexity of the BC is $\mathcal{O}(NM)$ \cite{Brandes2001ACentrality}.
+
+Different variations to the original Brandes algorithm are discussed in \cite{Brandes2008}, including k-betweenness.
+
+In \cite{Ercsey-Ravasz2010,Ercsey-Ravasz2012}, Ercsey-Ravasz, et al. study the so-called k-betweenness centrallity, which is similar to betweenness centrality but where only paths no longer than $k$ are considered. The authors show that the k-betweenness distributions present a scaling, where the curves corresponding to different values of $k$ can be scaled into a universal curve. In addition, they argue that a moderate value of $k$ is sufficient for identifying the influencer nodes. 
+
+In \cite{Kirkley2018FromGraphs}, Kirkley, et al. show that the road networks of the largest cities of the world have a universal betweenness distribution. This distribution appears as the result of two main contributions. The minimum spannig tree, which gives a power-law distribution $p(b) \sim b^{-1}$ in the range $(N,N^2)$, and the shorcuts, which allow nodes with lower betweenness (in the range $(1,N)$).
+
+In spatial networks, it is interesting to study the spatial distribution of high betweenness nodes. Using a model based on real data from road networks and Delaunay triangulations, in \cite{Kirkley2018FromGraphs} the authors show that there exist a transition in the spatial distriution of these nodes. For a sparse network, the nodes are distributed rather inhomogeneously and relatively further from the center. As the network becomes denser, the distribution moves toward the center and becomes more homogenous.
+
+In road networks, sometimes there are large loops composed by nodes of very high betweenness \cite{Lion2017}.
+
+\subsection{Percolation transition}
+
+Percolation transition on random spatial networks has been largely studied \cite{Melchert2013} [CITE Becker and Ziff, Percolation thresholds on two-dimensional Voronoi networks and Delaunay triangulations, PRE 2009]. Although the location of the percolation threshold depends on the model studied, in general the universaillity class is the same as regular lattices. In particular, Norrenbrock, et al \cite{Norrenbrock2016FragmentationAttacks} study the percolation transiton for recalculated degree-based (RD) and betweenness-based (RB) attacks on four different models of spatial networks. They conclude that the RD attack belongs to the standard 2-d percolation transition universality class. With respect to RB, they show that the percolation threshold is located at $f_c = 0$, but they do not arrive at a conclusion regarding other characteristics of the transition.
+
+For 2-dimensional regular lattices, the exponents are 
+
+\begin{align}
+\beta &= 5/36\simeq 0.14, \\
+\gamma &= 43/18\simeq 2.39,
+\tau &= 187/91\simeq 2.05,
+\nu &= 4/3.
+\end{align}
+
+
+%\begin{equation}
+%y(L, f) = L^{a} \tilde{F}\bigg[L^{1/\nu} (f-f_c)\bigg],
+%\end{equation}
+
+%$L = \sqrt{N}$.
 
 Exponentes en 2D
 
@@ -26,6 +62,10 @@ Exponentes en 2D
 \dfrac{\gamma}{2\nu} &= 0.896 \\
 1-\dfrac{\beta}{2\nu} &= 0.948
 \end{align}
+
+\begin{equation} \label{eq:peak_pos_shift}
+f_c(N) = f_c + b N^{-1/(d\nu)}
+\end{equation}
 
 \section{Resultados}
 
@@ -46,13 +86,13 @@ Exponentes en 2D
 \begin{figure}
 \centering
 \includegraphics[scale=0.25]{fig1_DT.pdf}
-\caption{Oder parameter, susceptibility and size of second lurgest cluster for RB and RB with different cutoffs, for different sizes.}
+\caption{Oder parameter, susceptibility and size of second lurgest cluster for RB and RB with different cutoffs, for different sizes. Note that for the RB attack, the peak in the susceptibility and second largest cluster tends to shift to lower values of $f$. Instead, for approximate attacks the shift is not clear.}
 \end{figure}
 
 \begin{figure}
 \centering
 \includegraphics[scale=0.25]{order_par_and_susceptibility_RBl_DT.pdf}
-\caption{Oder parameter, susceptibility and size of second lurgest cluster for RB and RB with different cutoffs. $N = 1024$.}
+\caption{Oder parameter, susceptibility and size of second lurgest cluster for RB and RB with different cutoffs. $N = 1024$. As larger path lengths are taken into account, the attack becomes more efficient in dismantling the network, and the transition moves towards lower values of $f$. Also the peak in the susceptibility and second largest cluster increases, showing that the fluctuations become more relevant. Except for RB2, all curves corresponding to attacks with cutoff present a similar form. The case of RB2 deserves special attention, as it presents a sort of double transition.}
 \end{figure}
 
 %\begin{figure}
@@ -68,13 +108,13 @@ Exponentes en 2D
 \begin{figure}
 \centering
 \includegraphics[scale=0.3]{comp_sizes_DT.pdf}
-\caption{Finite component size distribution near the percolation threshold for RB and RB with different cutoffs. For RB, the giant cluster is also considered. Each histogram is generated over an average of $N_r = 1000$ network realizations. The dashed line corresponds to $p(s) \sim s^{-\tau}$, with $\tau = 0.2055$, which is the correspondig value for random percolation.}
+\caption{Finite component size distribution near the percolation threshold for RB and RB with different cutoffs. For RB, the giant cluster is also considered. Each histogram is generated over an average of $N_r = 1000$ network realizations. The dashed line corresponds to $p(s) \sim s^{-\tau}$, with $\tau = 0.2055$, which is the correspondig value for random percolation. The attack based on the simpler approximation of BC (taking only paths of length 2), shows a power-law distribution consistent with standard percolation. As longer lengths are added to the approximation, the distribution starts to deviate from the power-law, presenting a valley for lower cluster sizes. For RB, the power-law dependence is not seen at all. Instead, a narrow-tailed bimodal distribution is seen, which is consistent with a first order transition.}
 \end{figure}
 
 \begin{figure}
 \centering
 \includegraphics[scale=0.3]{peak_scaling_DT.pdf}
-\caption{Scaling for the peak in the susceptibility and second largest cluster for RB and RB with different cutoffs. }
+\caption{Scaling for the peak in the susceptibility and second largest cluster for RB and RB with different cutoffs. For standard percolation in 2-dimensional regular lattices, the corresponding values are $\dfrac{\gamma}{2\nu} = 0.896$ and $1-\dfrac{\beta}{2\nu} = 0.948$. }
 \end{figure}
 
 \begin{figure}
@@ -86,7 +126,7 @@ Exponentes en 2D
 \begin{figure}
 \centering
 \includegraphics[scale=0.3]{nu_scaling_RB_DT.pdf}
-\caption{Scaling for the shift of the position of the susceptibility and second largest cluster peak for RB attack.}
+\caption{Position of the peak in the susceptibility and second largest cluster as a function of the inverse network size, for the RB attack. The data is consistent with a scaling of the form of Eq. \ref{eq:peak_pos_shift}, with $f_c = 0$ and $\nu \simeq 4/3$. This implies that, for the thermodynamic limit $N\rightarrow \infty$, only a sub-linear fraction of nodes has to be removed in order to dismantle the network. This result is consistent with the result obtained by \cite{Norrenbrock2016FragmentationAttacks}, using a scaling for the area under the curve of the order parameter.}
 \end{figure}
 
 \begin{figure}
@@ -95,7 +135,8 @@ Exponentes en 2D
 \caption{Collapse for the order parameter $S_1$ using different values of $\nu$ and considering $f_c^{\mathrm{(RB)}} = 0$.}
 \end{figure}
 
-
+\bibliographystyle{unsrt}
+\bibliography{library}
 
 
 \end{document}
