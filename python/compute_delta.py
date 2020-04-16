@@ -37,14 +37,16 @@ print('----------------------', end='\n\n')
 
 dir_name = os.path.join('../networks', net_type)
 base_net_name, base_net_name_size = get_base_network_name(net_type, size, param)
+base_network_dir_name = os.path.join(dir_name, base_net_name, base_net_name_size)
 
 for attack in attacks:
     print(attack)
     n_seeds = max_seed - min_seed
-    csv_file_name = os.path.join(dir_name, base_net_name, base_net_name_size, 
-                                 '{}_nSeeds{:d}_cpp.csv'.format(attack, n_seeds))
+    output_file_name = os.path.join(
+        base_network_dir_name, 'Delta_values_' + attack + '_nSeeds{:d}.txt'.format(n_seeds)
+    )
     if not overwrite:
-        if os.path.isfile(csv_file_name):
+        if os.path.isfile(output_file_name):
             continue
 
     delta_max_values = []
@@ -53,7 +55,6 @@ for attack in attacks:
     for seed in range(min_seed, max_seed):
 
         network = base_net_name_size + '_{:05d}'.format(seed)
-        base_network_dir_name = os.path.join(dir_name, base_net_name, base_net_name_size)
         attack_dir_name = os.path.join(dir_name, base_net_name, base_net_name_size, network, attack)
 
         ## Extract network file
@@ -96,10 +97,6 @@ for attack in attacks:
 
         delta_max_values.append([max_pos/N, delta_max])
 
-    n_seeds = max_seed - min_seed
-    output_file_name = os.path.join(
-        base_network_dir_name, 'Delta_values_' + attack + '_nSeeds{:d}.txt'.format(n_seeds)
-    )
     np.savetxt(output_file_name, delta_max_values)
 
     print('Correct seeds = ', valid_its)
