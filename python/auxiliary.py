@@ -1,4 +1,15 @@
+import os
 import sys
+import tarfile
+import numpy as np
+from planar import spatial_net_types, distance
+
+simple_props = ['Ngcc', 'C', 'Cws', 'r', 'meank', 'D', 'meanl', 'meanlw']
+
+def get_property_file_name(prop, directory):
+    if prop in simple_props:
+        file_name = os.path.join(directory, prop + '_values.txt')
+    return file_name
 
 def get_base_network_name(net_type, size, param):
     N = int(size)
@@ -29,6 +40,37 @@ def get_base_network_name(net_type, size, param):
 
 supported_attacks = [
     'Ran', 'Deg', 'DegU', 'CIU', 'CIU2', 'Eigenvector', 'Btw',
-    'BtwU1nn', 'EigenvectorU', 'BtwU',
+    'BtwU1nn', 'EigenvectorU', 'BtwU', 'BtwWU'
 ]
-supported_attacks += ['BtwU_cutoff{}'.format(l) for l in range(2, 100)]
+supported_attacks += ['BtwU_cutoff{}'.format(l) for l in range(2, 1000)]
+supported_attacks += ['BtwWU_cutoff{}'.format(l) for l in range(2, 1000)]
+
+def get_edge_weights(g, net_type, size, param, seed):
+    if net_type not in spatial_net_types:
+        print('Network type not supported for this attack')
+
+    N = size
+
+    base_net_dir_name = '../networks/DT/DT_param/DT_param_N{}'.format(N)
+    net_dir_name = os.path.join(base_net_dir_name, 'DT_param_N{}_{:05d}'.format(N, seed))
+    position_file_name = 'position.txt'
+    full_position_file_name = os.path.join(net_dir_name, position_file_name)
+
+    ## Extract positions from file
+    tar_input_name = 'position.tar.gz'
+    full_tar_input_name = os.path.join(net_dir_name, tar_input_name)
+    if not os.path.exists(full_tar_input_name):
+        print('ERROR: File', full_tar_input_name, 'does not exist')
+    tar = tarfile.open(full_tar_input_name, 'r:gz')
+    tar.extractall(net_dir_name)
+    tar.close()
+
+    positions = np.loadtxt(full_position_file_name)
+    os.remove(full_position_file_name)
+
+    edge_weights = []
+    for e in g.es():
+        s, t = e.tuple
+        edge_weights.append(distance(s, t, positions))
+
+    return edge_weights

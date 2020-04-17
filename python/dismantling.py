@@ -45,6 +45,9 @@ def updated_attack(graph, attack, out=None, random_state=0):
 
     ## Create a copy of graph so as not to modify the original
     g = graph.copy()
+    if 'BtwWU' in attack:
+        g.es['weight'] = graph.es['weight']
+        #print(g.es['weight'])
 
     ## Save original index as a vertex property
     N0 = g.vcount()
@@ -69,9 +72,17 @@ def updated_attack(graph, attack, out=None, random_state=0):
         ## Identify node to be removed
         if attack == 'BtwU':
             c_values = g.betweenness(directed=False, nobigint=False)
+        elif attack == 'BtwWU':
+            #print(g.es['weight'])
+            weights = g.es['weight'] if g.ecount() else None
+            c_values = g.betweenness(directed=False, weights=weights, nobigint=False)
         elif 'BtwU_cutoff' in attack:
             cutoff = int(attack.split('cutoff')[1])
             c_values = g.betweenness(directed=False, nobigint=False, cutoff=cutoff)
+        elif 'BtwWU_cutoff' in attack:
+            cutoff = int(attack.split('cutoff')[1])
+            weights = g.es['weight'] if g.ecount() else None
+            c_values = g.betweenness(directed=False, weights=weights, nobigint=False, cutoff=cutoff)
         elif attack == 'DegU':
             c_values = g.degree()
         elif attack == 'EigenvectorU':
@@ -265,8 +276,9 @@ def get_index_list(G, attack, out=None, random_state=0):
 
     supported_attacks = {
         'initial': ['Ran', 'Deg', 'Btw', 'Eigenvector'],
-        'updated': ['BtwU', 'EigenvectorU'] + \
-                   ['BtwU_cutoff{}'.format(i) for i in range(2, 100)],
+        'updated': ['BtwU', 'EigenvectorU', 'BtwWU'] + \
+                   ['BtwU_cutoff{}'.format(i) for i in range(2, 1000)] + \
+                   ['BtwWU_cutoff{}'.format(i) for i in range(2, 1000)],
         'updated_local': ['BtwU1nn'],
         'fast_updated': ['DegU', 'CIU', 'CIU2']
     }
@@ -314,79 +326,3 @@ def get_index_list_nk(G, attack, out=None, random_state=0):
     index_list = []
 
     return index_list
-
-
-if __name__ == '__main__':
-
-    test_net_1 = [
-        (0, 1),
-        (1, 2),
-        (1, 3),
-        (3, 4),
-        (3, 5),
-        (3, 6)
-    ]
-
-    test_net_2 = [
-        (0, 1),
-        (0, 2),
-        (0, 3),
-        (1, 2),
-        (1, 3),
-        (2, 3),
-        (1, 4),
-        (2, 5),
-        (3, 6),
-        (6, 7)
-    ]
-
-    test_net_3 = [
-        (0, 1),
-        (1, 2),
-        (2, 3),
-        (2, 4),
-        (4, 5),
-        (5, 6),
-        (5, 7),
-        (7, 8)
-    ]
-
-    print('Testing network 1')
-    n = np.max(test_net_1) + 1
-    g = ig.Graph()
-    g.add_vertices(n)
-    g.add_edges(test_net_1)
-    oi_list = get_index_list(g, 'Deg')
-    print(collective_influence(g, 1))
-    assert(oi_list[:2].tolist() == [3, 1])
-
-    print('Testing network 2')
-    n = np.max(test_net_2) + 1
-    g = ig.Graph()
-    g.add_vertices(n)
-    g.add_edges(test_net_2)
-    oi_list = get_index_list(g, 'Deg')
-    assert(oi_list[3] == 0)
-    oi_list = get_index_list(g, 'DegU')
-    assert(0 not in oi_list[:4])
-
-    print('Testing network 3')
-    n = np.max(test_net_3) + 1
-    g = ig.Graph()
-    g.add_vertices(n)
-    g.add_edges(test_net_3)
-    oi_list = get_index_list(g, 'Btw')
-    assert(set(oi_list[:2].tolist()) == set([2, 5]))
-    assert(oi_list[2] == 4)
-    oi_list = get_index_list(g, 'BtwU')
-    assert(4 in oi_list[4:])
-
-    print('Testing ER 500')
-    g = ig.Graph().Read_Edgelist('./test/ER_N500_p0.008_00000_gcc.txt',
-                                 directed=False)
-    oi_list = get_index_list(g, 'Deg')
-    oi_list2 = np.loadtxt('./test/oi_list_ER_N500_p0.008_00000_Deg.txt', dtype='int')
-    for i in range(10):
-        print(oi_list[i], g.vs[oi_list[i]].degree(), oi_list2[i], g.vs[oi_list2[i]].degree())
-    #print(oi_list[:10])
-    #print(oi_list2[:10])

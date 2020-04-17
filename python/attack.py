@@ -6,7 +6,7 @@ import igraph as ig
 
 
 from dismantling import get_index_list
-from auxiliary import get_base_network_name, supported_attacks
+from auxiliary import get_base_network_name, supported_attacks, get_edge_weights
 
 net_type = sys.argv[1]
 size = int(sys.argv[2])
@@ -63,6 +63,8 @@ for attack in attacks:
         ## Read network file
         g = ig.Graph().Read_Edgelist(full_input_name, directed=False)
 
+        if 'BtwWU' in attack:
+            g.es['weight'] = get_edge_weights(g, net_type, size, param, seed)
         ## Remove network file
         os.remove(full_input_name)
 
