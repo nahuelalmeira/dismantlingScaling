@@ -94,6 +94,9 @@ for attack in attacks:
 
         tar_input_name = 'comp_data.tar.gz'
         full_tar_input_name = os.path.join(attack_dir_name, tar_input_name)
+        if not os.path.isfile(full_tar_input_name):
+            continue
+        
         tar = tarfile.open(full_tar_input_name, 'r:gz')
         tar.extractall(attack_dir_name)
         tar.close()
