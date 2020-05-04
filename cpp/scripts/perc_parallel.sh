@@ -13,9 +13,16 @@ SEED=$( printf %05d $6 )
 
 BASE_DIR="${BASE_DIR}/${NET_TYPE}"
 BASE_NET="${NET_TYPE}_${PARAM}"
-BASE_NET_DIR="${BASE_DIR}/${BASE_NET}/${BASE_NET}_N${N}"
 
-NET_NAME="${BASE_NET}_N${N}_${SEED}"
+if [ "${NET_TYPE}" == "Lattice" || "${NET_TYPE}" == "Ld3" ]; then
+  BASE_NET_DIR="${BASE_DIR}/${BASE_NET}/${BASE_NET}_L${N}"
+  NET_NAME="${BASE_NET}_L${N}_${SEED}"
+else
+  BASE_NET_DIR="${BASE_DIR}/${BASE_NET}/${BASE_NET}_N${N}"
+  NET_NAME="${BASE_NET}_N${N}_${SEED}"
+fi
+
+
 NET_DIR="${BASE_NET_DIR}/${NET_NAME}"
 NETWORK="${NET_DIR}/${NET_NAME}.txt"
 NETWORK_TAR="${NET_DIR}/${NET_NAME}.tar.gz"
