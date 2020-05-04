@@ -1,3 +1,11 @@
+# LaTeX
+*.bbl
+*.aux
+*.blg
+*.dvi
+*.out
+*.synctex.gz
+
 # Networks
 networks/*
 # vscode
