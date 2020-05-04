@@ -14,6 +14,12 @@ max_seed = int(sys.argv[5])
 
 if net_type in ['ER', 'RR', 'BA', 'MR', 'DT']:
     N = int(size)
+elif net_type == 'Lattice':
+    L = int(size)
+    N = L*L
+elif net_type == 'Ld3':
+    L = int(size)
+    N = L*L*L
 
 overwrite = False
 if 'overwrite' in sys.argv:
@@ -94,8 +100,9 @@ for attack in attacks:
         delta_values = np.abs(np.diff(Ngcc_values))
         max_pos = np.argmax(delta_values)
         delta_max = delta_values[max_pos]
+        Sgcc_c = Ngcc_values[max_pos] / N
 
-        delta_max_values.append([max_pos/N, delta_max])
+        delta_max_values.append([max_pos/N, delta_max/N, Sgcc_c])
 
     np.savetxt(output_file_name, delta_max_values)
 

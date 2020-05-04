@@ -69,4 +69,4 @@ for attack in attacks:
         os.remove(full_input_name)
 
         ## Perform the attack
-        get_index_list(g, attack, full_output_name)
+        get_index_list(g, attack, full_output_name, random_state=seed)

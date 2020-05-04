@@ -7,9 +7,9 @@ import queue
 sys.path.append(os.path.join(os.path.dirname(__file__), 'fast'))
 from functions import RD_attack, RCI_attack, graph_to_nn_set
 
-def initial_attack(g, attack, out, random_state=0):
+def initial_attack(g, attack, out=None, random_state=0):
 
-    if os.path.isfile(out):
+    if out and os.path.isfile(out):
         original_indices = np.loadtxt(out, dtype='int')
         return original_indices
 
@@ -37,6 +37,26 @@ def initial_attack(g, attack, out, random_state=0):
         np.savetxt(out, original_indices, fmt='%d')
 
     return original_indices
+
+def edge_initial_attack(g, attack, out=None, random_state=0):
+
+    if out and os.path.isfile(out):
+        tuple_values = np.loadtxt(out, dtype='int')
+        return tuple_values
+
+    ## Set random seed for reproducibility
+    np.random.seed(random_state)
+
+    if attack == 'Edge_Ran':
+        m = g.ecount()
+        oi_arr = np.array(range(m))
+        np.random.shuffle(oi_arr)
+        tuple_values = [g.es[idx].tuple for idx in oi_arr]
+
+    if out:
+        np.savetxt(out, tuple_values, fmt='%d')
+
+    return tuple_values
 
 def updated_attack(graph, attack, out=None, random_state=0):
 
@@ -89,7 +109,16 @@ def updated_attack(graph, attack, out=None, random_state=0):
             from igraph import arpack_options
             arpack_options.maxiter = 300000
             c_values = g.eigenvector_centrality(directed=False, arpack_options=arpack_options)
-        idx = np.argmax(c_values)
+
+        #idx = np.argmax(c_values)
+        c_values = np.around(c_values, decimals=8)
+        m = np.max(c_values)
+        m_indices = [i for i, value in enumerate(c_values) if value==m]
+
+        idx = np.random.choice(m_indices)
+        #if j < 10:
+        #    print(j, idx, len(m_indices), m_indices, sorted(c_values, reverse=True)[:4])
+
 
         ## Add index to list
         original_idx = g.vs[idx]['name']
@@ -108,6 +137,56 @@ def updated_attack(graph, attack, out=None, random_state=0):
         f.close()
 
     return original_indices
+
+def edge_updated_attack(graph, attack, out=None, random_state=0):
+
+    ## Set random seed for reproducibility
+    np.random.seed(random_state)
+
+    ## Create a copy of graph so as not to modify the original
+    g = graph.copy()
+    if 'BtwWU' in attack:
+        g.es['weight'] = graph.es['weight']
+
+    M0 = g.ecount()
+
+    tuple_list = []
+
+    j = 0
+    if out:
+        if os.path.isfile(out) and os.path.getsize(out) > 0:
+            tuple_list = np.loadtxt(out, dtype='int', comments='\x00')
+            tuple_list = np.array(tuple_list) ## In case oi_values is one single integer
+            tuple_list = [(s,t) for (s,t) in tuple_list]
+            g.delete_edges(tuple_list)
+            j += len(tuple_list)
+            np.savetxt(out, tuple_list, fmt='%d')
+
+        f = open(out, 'a+')
+
+    while j < M0:
+
+        ## Identify edge to be removed
+        if attack == 'Edge_BtwU':
+            c_values = g.edge_betweenness(directed=False)
+
+        idx = np.argmax(c_values)
+        tuple_value = g.es[idx].tuple
+        tuple_list.append(tuple_value)
+
+        ## Remove edge
+        g.es[idx].delete()
+
+        j += 1
+
+        if out:
+            f.write('{:d} {:d}\n'.format(*tuple_value))
+            f.flush()
+
+    if out:
+        f.close()
+
+    return tuple_list
 
 def fast_updated_attack(g, attack, out=None, random_state=0):
 
@@ -280,17 +359,23 @@ def get_index_list(G, attack, out=None, random_state=0):
                    ['BtwU_cutoff{}'.format(i) for i in range(2, 1000)] + \
                    ['BtwWU_cutoff{}'.format(i) for i in range(2, 1000)],
         'updated_local': ['BtwU1nn'],
-        'fast_updated': ['DegU', 'CIU', 'CIU2']
+        'fast_updated': ['DegU', 'CIU', 'CIU2'],
+        'edge_initial': ['Edge_Ran'],
+        'edge_updated': ['Edge_BtwU']
     }
 
     if attack in supported_attacks['initial']:
-        index_list = initial_attack(G, attack, out, random_state=random_state)
+        index_list = initial_attack(G, attack, out=out, random_state=random_state)
     elif attack in supported_attacks['updated']:
-        index_list = updated_attack(G, attack, out, random_state=random_state)
+        index_list = updated_attack(G, attack, out=out, random_state=random_state)
     elif attack in supported_attacks['updated_local']:
-        index_list = updated_local_attack(G, attack, out, random_state=random_state)
+        index_list = updated_local_attack(G, attack, out=out, random_state=random_state)
     elif attack in supported_attacks['fast_updated']:
-        index_list = fast_updated_attack(G, attack, out, random_state=random_state)
+        index_list = fast_updated_attack(G, attack, out=out, random_state=random_state)
+    elif attack in supported_attacks['edge_initial']:
+        index_list = edge_initial_attack(G, attack, out=out, random_state=random_state)
+    elif attack in supported_attacks['edge_updated']:
+        index_list = edge_updated_attack(G, attack, out=out, random_state=random_state)
     else:
         print('ERROR: Attack {} not supported.'.format(attack),
               file=sys.stderr)

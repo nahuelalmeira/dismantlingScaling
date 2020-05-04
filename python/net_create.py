@@ -61,6 +61,12 @@ for seed in seeds:
         N = int(size)
         m = int(param)
         G = ig.Graph().Barabasi(N, m)
+    elif net_type == 'Lattice':
+        L = int(size)
+        G = ig.Graph().Lattice(dim=[L, L], circular=False)
+    elif net_type == 'Ld3':
+        L = int(size)
+        G = ig.Graph().Lattice(dim=[L, L, L], circular=False)
     elif net_type == 'MR':
         N = int(size)
         if param == 'rMST':
