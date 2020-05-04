@@ -1,6 +1,7 @@
 \documentclass{article}
     % General document formatting
     \usepackage[margin=0.7in]{geometry}
+    \usepackage{hyperref}
     \usepackage[parfill]{parskip}
     \usepackage[utf8]{inputenc}
     
@@ -9,6 +10,13 @@
 
 \usepackage{graphicx}
 \graphicspath{{figs/}}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=cyan,
+}
 
 \begin{document}
 
@@ -20,6 +28,7 @@ There are several models of spatial networks. Many of them are described in the 
 
 The Delaunay triangulation (DT) is the dual of the Voronoi-Tessellation. Given a set of points $V$ in a d-dimentional space, a link between two nodes $u,\;v\in V$ is present if and only if there exist a d-dimentional sphere which embeds $u$ and $v$ but no other points. Several properties of the DT have been studied, such as extreme values \cite{Lee1980}, average degree and distance [CITE], ... [AGREGAR MAS COSAS]. Although a naive algorithm for constructing a Delaunay triangulation is $\mathcal{O}(N^3)$, the complexity can be reduced to $\mathcal{O}(N\log N)$, as shown in \cite{Lee1980}. In this work, we used the Qhull computational geometrical library \footnote{www.qhull.org}, together with the Python SciPy package.
 
+The percolation properties of DT have been studied in \cite{Becker2009,Alencar2020}.
 
 
 \subsection{Betweenness centrality}
@@ -38,14 +47,14 @@ In road networks, sometimes there are large loops composed by nodes of very high
 
 \subsection{Percolation transition}
 
-Percolation transition on random spatial networks has been largely studied \cite{Melchert2013} [CITE Becker and Ziff, Percolation thresholds on two-dimensional Voronoi networks and Delaunay triangulations, PRE 2009]. Although the location of the percolation threshold depends on the model studied, in general the universaillity class is the same as regular lattices. In particular, Norrenbrock, et al \cite{Norrenbrock2016FragmentationAttacks} study the percolation transiton for recalculated degree-based (RD) and betweenness-based (RB) attacks on four different models of spatial networks. They conclude that the RD attack belongs to the standard 2-d percolation transition universality class. With respect to RB, they show that the percolation threshold is located at $f_c = 0$, but they do not arrive at a conclusion regarding other characteristics of the transition.
+Percolation transition on random spatial networks has been largely studied \cite{Melchert2013,Becker2009,Norrenbrock2016a}. Although the location of the percolation threshold depends on the model studied, in general the universaillity class is the same as regular lattices. In particular, Norrenbrock, et al \cite{Norrenbrock2016FragmentationAttacks} study the percolation transiton for recalculated degree-based (RD) and betweenness-based (RB) attacks on four different models of spatial networks. They conclude that the RD attack belongs to the standard 2-d percolation transition universality class. With respect to RB, they show that the percolation threshold is located at $f_c = 0$, but they do not arrive at a conclusion regarding other characteristics of the transition.
 
 For 2-dimensional regular lattices, the exponents are 
 
 \begin{align}
 \beta &= 5/36\simeq 0.14, \\
-\gamma &= 43/18\simeq 2.39,
-\tau &= 187/91\simeq 2.05,
+\gamma &= 43/18\simeq 2.39, \\
+\tau &= 187/91\simeq 2.05, \\
 \nu &= 4/3.
 \end{align}
 
@@ -63,11 +72,29 @@ Exponentes en 2D
 1-\dfrac{\beta}{2\nu} &= 0.948
 \end{align}
 
+For a finite-size system, the percolation threshold does not necesarly coincide with the corresponding value for $N\rightarrow \infty$. In general, the difference between these values presents a scaling in the form
+
 \begin{equation} \label{eq:peak_pos_shift}
-f_c(N) = f_c + b N^{-1/(d\nu)}
+f_c(N) - f_c = b N^{-1/\theta}.
 \end{equation}
 
-\section{Resultados}
+TODO: Chequear cu\'al es el exponente correcto en la ecuaci\'on anterior. Partiendo del scaling
+
+\begin{equation}
+X_1 \sim N^{-\omega/(d\nu)} F[(f-f_c)N^{1/(d\nu)}],
+\end{equation}
+
+donde $\xi = |f-f_c|^{-\nu}$,
+y definiendo $f_c(N) = \max_{f} \left\lbrace F[(f-f_c)N^{1/(d\nu)}] \right\rbrace$, tenemos que $F$ alcanza su m\'aximo para un valor $b$ tal que $b = (f_c(N)-f_c) N^{1/(d\nu)}$, de donde se deduce que $\theta = 1/(d\nu)$ (ver \cite{Ziff2010ScalingLattice,Cho2009}).
+Sin embargo, hay otros trabajos que dicen que esto no siempre es as\'i, por ejemplo, en \cite{Fan2020} dicen que $\theta = \nu_1$ y que, en general, $\nu_1 \neq \nu$ (en algunos casos, como por ejemplo en percolaci\'on random, s\'i coinciden). En \cite{DaCosta2010}, dicen que $\theta = d_u/2$, siendo $d_u$ la dimensi\'on cr\'itica superior.
+
+\subsubsection{Percolation transition with $f_c = 0$}
+
+References describing processes where $f_c = 0$: \cite{Rozenfeld2010Small-worldApproach,Trevelyan2018DegreeInformation,Cho2013AvoidingModels}
+
+Other useful references: \cite{Boettcher2012,Trevelyan2018DegreeInformation,Cho2010}
+
+\section{Results}
 
 %\begin{figure}
 %\centering
@@ -105,16 +132,18 @@ f_c(N) = f_c + b N^{-1/(d\nu)}
 %\includegraphics[scale=0.3]{meanS_2.pdf}
 %\end{figure}
 
+
+
 \begin{figure}
 \centering
 \includegraphics[scale=0.3]{comp_sizes_DT.pdf}
-\caption{Finite component size distribution near the percolation threshold for RB and RB with different cutoffs. For RB, the giant cluster is also considered. Each histogram is generated over an average of $N_r = 1000$ network realizations. The dashed line corresponds to $p(s) \sim s^{-\tau}$, with $\tau = 0.2055$, which is the correspondig value for random percolation. The attack based on the simpler approximation of BC (taking only paths of length 2), shows a power-law distribution consistent with standard percolation. As longer lengths are added to the approximation, the distribution starts to deviate from the power-law, presenting a valley for lower cluster sizes. For RB, the power-law dependence is not seen at all. Instead, a narrow-tailed bimodal distribution is seen, which is consistent with a first order transition.}
+\caption{Finite component size distribution near the percolation threshold for RB and RB with different cutoffs. For RB, the giant cluster is also considered. Each histogram is generated over an average of $N_r = 1000$ network realizations. The dashed line corresponds to $p(s) \sim s^{-\tau}$, with $\tau = 0.2055$, which is the correspondig value for random percolation. The attack based on the simpler approximation of BC (taking only paths of length 2), shows a power-law distribution consistent with standard percolation. As longer lengths are added to the approximation, the distribution starts to deviate from the power-law, presenting a valley for lower cluster sizes. For RB, the power-law dependence is not seen at all. Instead, a narrow-tailed bimodal distribution is seen, which is consistent with a first order transition \cite{Araujo2010,Binder1992} . The difference between the peaks is roughly the value for the largest jump in the giant component, $\Delta\sim 0.4$. }
 \end{figure}
 
 \begin{figure}
 \centering
 \includegraphics[scale=0.3]{peak_scaling_DT.pdf}
-\caption{Scaling for the peak in the susceptibility and second largest cluster for RB and RB with different cutoffs. For standard percolation in 2-dimensional regular lattices, the corresponding values are $\dfrac{\gamma}{2\nu} = 0.896$ and $1-\dfrac{\beta}{2\nu} = 0.948$. }
+\caption{Scaling for the peak in the susceptibility and second largest cluster for RB and RB with different cutoffs. For standard percolation in 2-dimensional regular lattices, the corresponding values are $\dfrac{\gamma}{2\nu} = 0.896$ and $1-\dfrac{\beta}{2\nu} = 0.948$. For RB, the scaling is consistent with a first-order transition, where $\beta = 0$ and $\gamma/(d\nu) = 1$ \cite{Binder1981,Binder1984,Cho2009}. }
 \end{figure}
 
 \begin{figure}
@@ -126,13 +155,66 @@ f_c(N) = f_c + b N^{-1/(d\nu)}
 \begin{figure}
 \centering
 \includegraphics[scale=0.3]{nu_scaling_RB_DT.pdf}
-\caption{Position of the peak in the susceptibility and second largest cluster as a function of the inverse network size, for the RB attack. The data is consistent with a scaling of the form of Eq. \ref{eq:peak_pos_shift}, with $f_c = 0$ and $\nu \simeq 4/3$. This implies that, for the thermodynamic limit $N\rightarrow \infty$, only a sub-linear fraction of nodes has to be removed in order to dismantle the network. This result is consistent with the result obtained by \cite{Norrenbrock2016FragmentationAttacks}, using a scaling for the area under the curve of the order parameter.}
+\caption{Position of the peak in the susceptibility and second largest cluster as a function of the inverse network size, for the RB attack. The data is consistent with a scaling of the form of Eq. \ref{eq:peak_pos_shift}, with $f_c = 0$ and $\theta \simeq 3$. This implies that, for the thermodynamic limit $N\rightarrow \infty$, only a sub-linear fraction of nodes has to be removed in order to dismantle the network. This result is consistent with the result obtained by \cite{Norrenbrock2016FragmentationAttacks}, using a scaling for the area under the curve of the order parameter.}
 \end{figure}
 
 \begin{figure}
 \centering
 \includegraphics[scale=0.3]{Sgcc_scaling_RB_DT.pdf}
 \caption{Collapse for the order parameter $S_1$ using different values of $\nu$ and considering $f_c^{\mathrm{(RB)}} = 0$.}
+\end{figure}
+
+\begin{figure}
+\centering
+\includegraphics[scale=0.3]{delta_DT.pdf}
+\caption{(Left) Average for the maximum variation in the order parameter for different attacks. Dashed lines correspond to a power-law fit $\Delta := \mathrm{max}[\Delta S_1] \sim N^{-\omega}$. The value for $\omega$ should be lower than zero for second-order transitions, and equal to zero for first-order transitions. References: \cite{Trevelyan2018DegreeInformation,Bastas2014a,Nagler2011a,Fan2020}. (Center) Finite-size percolation threshold, compued as the fraction of nodes correspondig to the largest jump in the order parameter. Except for RB, $f_c(N)$ quickly converges to a non-zero value. RB, in turn, converges to zero. (Right) Scaling of $f_c(N)$ for RB. The fact that, for local rules as RB with cutoff, the percolation threhold is non-zero, but for global rules, as RB, it goes to zero, resembles some explosive percolation models, such as the Spanning Cluster-Avoiding (SCA) method introduced in \cite{Cho2013}. }
+\end{figure}
+
+\begin{figure}
+\centering
+\includegraphics[scale=0.3]{D_vs_N_DT.pdf}
+\caption{Diameter fo the DT as a function of the network size.}
+\end{figure}
+
+\begin{figure}
+\centering
+\includegraphics[scale=0.3]{Sgcc_scaling_RB_f_renormalized_DT.pdf}
+\caption{Different attempts to collapsing the curves correspondig to $S_1$ for different network sizes.}
+\end{figure}
+
+%\begin{figure}
+%\centering
+%\includegraphics[scale=0.3]{Btw_vs_BtwU_Lattice_L12.pdf}
+%\caption{Evolution of the IB and RB attacks over a lattice with $L=12$.}
+%\end{figure}
+
+
+%\begin{figure}
+%\centering
+%\includegraphics[scale=0.3]{Btw_vs_BtwU_DT_L12.pdf}
+%\caption{Evolution of the IB and RB attacks over a DT with $N=12^2$.}
+%\end{figure}
+
+For a d-dimensional lattice, the optimal attack consists in breaking the network by recursively removing the nodes located over a d-1 hyperplane which intersects the center of the giant component. The largest jump in the giant component is then given by
+
+\begin{equation}
+\Delta = \dfrac{1}{L^d} \left[ L^d - L^{d-1} + 1 - L^{d-1} \dfrac{L-1}{2} \right] = \dfrac{1}{2} - \dfrac{1}{2L} + \dfrac{1}{L^d},
+\end{equation}
+
+and the position of the largest jump is located at $f_c = L^{-1}$.
+
+The RB attack performs almost optimally for the Lattice, as it can be seen in \ref{fig:Delta_Lattice}.
+
+\begin{figure}
+\centering
+\includegraphics[scale=0.3]{Delta_and_fcL_Lattice.pdf}
+\caption{\label{fig:Delta_Lattice} (Left) Maximum jump in the order parameter in a single realization of the RB attack over a 2-d lattice. Black curve: $\Delta = \dfrac{1}{2}-\dfrac{1}{2L} + \dfrac{1}{L^2}$, corresponding to split the lattice in halves. (Right) Scaling of the critical point for finite-size systems. As it can be seen, the RB attack performs almost optimally in this netowork}
+\end{figure}
+
+\begin{figure}
+\centering
+\includegraphics[scale=0.3]{Lattice_vs_DT_L128_seed00000.pdf}
+\caption{Network status at $f_c$ for RB $(N = 128^2)$. After removing the green nodes, the network is splitted in two extensive clusters. The largest cluster correspond to the orange nodes and the second largest cluster to the purple nodes. The rest of the nodes are plotted in grey. For the Lattice, RB traces a diagonal and break the network in two clusters of almost the same size. For DT, the algorithm starts by removing the high-betweennesss nodes located at the periphery and then it finds a high betweenness ``percolating path'' across  the network. Although in the latter case the network is also splitted in two extensive components, there is a significant difference in size between the two largest clusters. }
 \end{figure}
 
 \bibliographystyle{unsrt}
