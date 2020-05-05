@@ -58,7 +58,7 @@ def edge_initial_attack(g, attack, out=None, random_state=0):
 
     return tuple_values
 
-def updated_attack(graph, attack, out=None, random_state=0):
+def updated_attack_ig(graph, attack, out=None, random_state=0):
 
     ## Set random seed for reproducibility
     np.random.seed(random_state)
@@ -137,6 +137,52 @@ def updated_attack(graph, attack, out=None, random_state=0):
         f.close()
 
     return original_indices
+
+def updated_attack_nk(g, attack, out=None, random_state=0):
+
+    import networkit as netKit
+
+    ## Set random seed for reproducibility
+    np.random.seed(random_state)
+
+    order = []
+
+    if out:
+        if os.path.isfile(out) and os.path.getsize(out) > 0:
+            oi_values = np.loadtxt(out, dtype='int', comments='\x00')
+            for oi in oi_values:
+                g.removeNode(oi)
+                order.append(oi)
+
+        f = open(out, 'a+')
+
+    N = g.numberOfNodes()
+    while N:
+
+        if attack == 'BtwU':
+            btw = netKit.centrality.Betweenness(g)
+            btw.run()
+            idx, c_value = btw.ranking()[0]
+
+        order.append(idx)
+        g.removeNode(idx)
+
+        N -= 1
+
+        if out:
+            f.write('{:d}\n'.format(idx))
+            f.flush()
+
+    if out:
+        f.close()
+
+    return order
+
+def updated_attack(graph, attack, out=None, random_state=0):
+
+    if isinstance(graph, ig.Graph):
+        return updated_attack_ig(graph, attack, out, random_state)
+    return updated_attack_nk(graph, attack, out, random_state)
 
 def edge_updated_attack(graph, attack, out=None, random_state=0):
 
@@ -341,17 +387,17 @@ def get_index_list(G, attack, out=None, random_state=0):
     Write to output out index list in order of removal
     """
 
-    if G.is_directed():
-        print('ERROR: G must be undirected.', file=sys.stderr)
-        return 1
+    #if G.is_directed():
+    #    print('ERROR: G must be undirected.', file=sys.stderr)
+    #    return 1
 
     #if not G.is_connected():
     #    print('ERROR: G must be connected.', file=sys.stderr)
     #    return 1
 
-    if not G.is_simple():
-        print('ERROR: G must be simple.', file=sys.stderr)
-        return 1
+    #if not G.is_simple():
+    #    print('ERROR: G must be simple.', file=sys.stderr)
+    #    return 1
 
     supported_attacks = {
         'initial': ['Ran', 'Deg', 'Btw', 'Eigenvector'],
@@ -397,17 +443,5 @@ def get_index_list_hybrid(G, attacks, probabilities, out=None, random_state=0):
         return 1
 
     index_list = updated_hybrid_attack(G, attacks, probabilities, out, random_state=random_state)
-
-    return index_list
-
-
-def get_index_list_nk(G, attack, out=None, random_state=0):
-    """
-    Write to output out index list in order of removal
-    (it uses the networKit package)
-    TODO: Write function
-    """
-
-    index_list = []
 
     return index_list

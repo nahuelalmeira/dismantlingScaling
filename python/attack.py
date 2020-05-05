@@ -14,10 +14,13 @@ param = sys.argv[3]
 min_seed = int(sys.argv[4])
 max_seed = int(sys.argv[5])
 
+overwrite = False
 if 'overwrite' in sys.argv:
     overwrite = True
-else:
-    overwrite = False
+
+package = 'igraph'
+if 'networkit' in sys.argv:
+    package = 'networkit'
 
 python_file_dir_name = os.path.dirname(__file__)
 dir_name = os.path.join(python_file_dir_name, '../networks', net_type)
@@ -61,7 +64,13 @@ for attack in attacks:
             os.remove(full_output_name)
 
         ## Read network file
-        g = ig.Graph().Read_Edgelist(full_input_name, directed=False)
+        if package == 'networkit':
+            import networkit as netKit
+            g = netKit.readGraph(
+                full_input_name, fileformat=netKit.Format.EdgeListSpaceZero, directed=False
+            )
+        else:
+            g = ig.Graph().Read_Edgelist(full_input_name, directed=False)
 
         if 'BtwWU' in attack:
             g.es['weight'] = get_edge_weights(g, net_type, size, param, seed)
