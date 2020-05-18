@@ -3,7 +3,7 @@ import numpy as np
 import os
 import sys
 import tarfile
-from auxiliary import get_base_network_name
+from auxiliary import get_base_network_name, read_data_file
 
 net_type = sys.argv[1]
 size = int(sys.argv[2])
@@ -69,37 +69,16 @@ for seed in seeds:
     net_name = base_net_name_size + '_{:05d}'.format(seed)
     print(net_name)
     net_dir = os.path.join(base_net_dir, net_name)
+    attack_dir = os.path.join(net_dir, attack)
 
-    ## Extract network file
-    tar_input_name = net_name + '.tar.gz'
-    full_tar_input_name = os.path.join(net_dir, tar_input_name)
-    if not os.path.exists(full_tar_input_name):
-        print('TAR file do not exist:', tar_input_name)
-        continue
-    tar = tarfile.open(full_tar_input_name, 'r:gz')
-    tar.extractall(net_dir)
-    tar.close()
-
-    input_name = net_name + '.txt'
-    full_input_name = os.path.join(net_dir, input_name)
-
-    data_dir = os.path.join(net_dir, attack)
-    oi_file = os.path.join(data_dir, 'oi_list.txt')
-    if not os.path.isfile(oi_file):
-        print("FILE " + oi_file + " NOT FOUND")
-        continue
     try:
-        oi_values = np.loadtxt(oi_file, dtype=int)
-    except:
-        print('Cannot read file from seed', seed)
+        g = read_data_file(net_dir, net_name, reader='igraph')
+        oi_values = read_data_file(attack_dir, 'oi_list', reader='numpyInt')
+    except FileNotFoundError:
+        print('File could not be read')
         continue
 
     new_seeds.append(seed)
-
-    g = ig.Graph().Read_Edgelist(full_input_name, directed=False)
-
-    ## Remove network file
-    os.remove(full_input_name)
 
     if not g.is_simple():
         print('Network "' + net_name + '" will be considered as simple.')
@@ -114,13 +93,10 @@ for seed in seeds:
 
     f = float(str_f)
 
-    try:
-        len(oi_values)
-    except:
+    if len(oi_values) and len(oi_values) < int(f*N):
+        print('Not enough oi_values')
         continue
 
-    if len(oi_values) < int(f*N):
-        continue
     oi_values = oi_values[:int(f*N)]
     g.delete_vertices(oi_values)
 

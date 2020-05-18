@@ -1,6 +1,8 @@
 import os
 import sys
+import errno
 import tarfile
+import igraph as ig
 import numpy as np
 from planar import spatial_net_types, distance
 
@@ -85,3 +87,58 @@ def get_edge_weights(g, net_type, size, param, seed):
         edge_weights.append(distance(s, t, positions))
 
     return edge_weights
+
+def read_data_file(directory, base_name, reader, file_ext='.txt', compress_ext='.tar.gz'):
+    """Auxiliary function for reading common data files, which could be compressed.
+
+    Arguments:
+        directory {[type]} -- [description]
+        base_name {[type]} -- [description]
+        reader {[type]} -- [description]
+
+    Keyword Arguments:
+        file_ext {str} -- [description] (default: {'.txt'})
+        compress_ext {str} -- [description] (default: {'.tar.gz'})
+    """
+
+
+    def read(file_name, reader):
+        if reader == 'numpy':
+            return np.loadtxt(file_name)
+        elif reader == 'numpyInt':
+            return np.loadtxt(file_name, dtype='int')
+        elif reader == 'igraph':
+            return ig.Graph().Read_Edgelist(file_name, directed=False)
+        elif reader == 'networkit':
+            import networkit as netKit
+            return netKit.readGraph(
+                file_name, fileformat=netKit.Format.EdgeListSpaceZero, directed=False
+            )
+
+    compress_file_name = base_name + compress_ext
+    full_compress_file_name = os.path.join(directory, compress_file_name)
+    tar_exist = False
+    if os.path.isfile(full_compress_file_name):
+        tar_exist = True
+
+    data_file_name = base_name + file_ext
+    full_data_file_name = os.path.join(directory, data_file_name)
+    if os.path.isfile(full_data_file_name):
+        data = read(full_data_file_name, reader)
+
+    elif tar_exist:
+        tar = tarfile.open(full_compress_file_name, 'r:gz')
+        tar.extractall(directory)
+        tar.close()
+
+        data = read(full_data_file_name, reader)
+
+    else:
+        raise FileNotFoundError(
+            errno.ENOENT, os.strerror(errno.ENOENT), full_data_file_name
+            )
+
+    if tar_exist:
+        os.remove(full_data_file_name)
+
+    return data

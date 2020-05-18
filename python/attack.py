@@ -6,7 +6,7 @@ import igraph as ig
 
 
 from dismantling import get_index_list
-from auxiliary import get_base_network_name, supported_attacks, get_edge_weights
+from auxiliary import get_base_network_name, supported_attacks, get_edge_weights, read_data_file
 
 net_type = sys.argv[1]
 size = int(sys.argv[2])
@@ -42,18 +42,6 @@ for attack in attacks:
 
         print(net_name)
 
-        ## Extract network file
-        tar_input_name = net_name + '.tar.gz'
-        full_tar_input_name = os.path.join(net_dir, tar_input_name)
-        if not os.path.exists(full_tar_input_name):
-            continue
-        tar = tarfile.open(full_tar_input_name, 'r:gz')
-        tar.extractall(net_dir)
-        tar.close()
-
-        input_name = net_name + '.txt'
-        full_input_name = os.path.join(net_dir, input_name)
-
         output_dir = os.path.join(net_dir, attack)
         if not os.path.exists(output_dir):
             os.mkdir(output_dir)
@@ -63,19 +51,10 @@ for attack in attacks:
         if os.path.isfile(full_output_name) and overwrite:
             os.remove(full_output_name)
 
-        ## Read network file
-        if package == 'networkit':
-            import networkit as netKit
-            g = netKit.readGraph(
-                full_input_name, fileformat=netKit.Format.EdgeListSpaceZero, directed=False
-            )
-        else:
-            g = ig.Graph().Read_Edgelist(full_input_name, directed=False)
+        g = read_data_file(net_dir, net_name, reader=package)
 
         if 'BtwWU' in attack:
             g.es['weight'] = get_edge_weights(g, net_type, size, param, seed)
-        ## Remove network file
-        os.remove(full_input_name)
 
         ## Perform the attack
         get_index_list(g, attack, full_output_name, random_state=seed)

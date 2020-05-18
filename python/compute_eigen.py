@@ -4,7 +4,7 @@ import tarfile
 import igraph as ig
 import numpy as np
 import pandas as pd
-from auxiliary import get_base_network_name, supported_attacks
+from auxiliary import get_base_network_name, supported_attacks, read_data_file
 
 net_type = sys.argv[1]
 size = int(sys.argv[2])
@@ -77,33 +77,15 @@ for attack in attacks:
         if net_type == 'Lattice':
             position = np.array([[i//L, i%L] for i in range(N)])
         else:
-
-            position_file_name = 'position.txt'
-            full_position_file_name = os.path.join(net_dir_name, position_file_name)
-            ## Extract positions from file
-            tar_input_name = 'position.tar.gz'
-            full_tar_input_name = os.path.join(net_dir_name, tar_input_name)
-            if not os.path.exists(full_tar_input_name):
-                print('ERROR: File', full_tar_input_name, 'does not exist')
-            tar = tarfile.open(full_tar_input_name, 'r:gz')
-            tar.extractall(net_dir_name)
-            tar.close()
-
-            position = np.loadtxt(full_position_file_name)
-            os.remove(full_position_file_name)
+            position = read_data_file(net_dir_name, 'position', reader='numpy')
 
         tar_input_name = 'comp_data.tar.gz'
         full_tar_input_name = os.path.join(attack_dir_name, tar_input_name)
         if not os.path.isfile(full_tar_input_name):
             continue
-        
-        tar = tarfile.open(full_tar_input_name, 'r:gz')
-        tar.extractall(attack_dir_name)
-        tar.close()
 
-        full_file_name  = os.path.join(attack_dir_name, 'comp_data.txt')
-        aux = np.loadtxt(full_file_name)
-        os.remove(full_file_name)
+        aux = read_data_file(attack_dir_name, 'comp_data', reader='numpy')
+
 
         Sgcc_values = aux[:,0][::-1] / N
         delta_values = np.abs(np.diff(Sgcc_values))

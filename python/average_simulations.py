@@ -4,7 +4,7 @@ import tarfile
 import igraph as ig
 import numpy as np
 import pandas as pd
-from auxiliary import get_base_network_name, supported_attacks
+from auxiliary import get_base_network_name, supported_attacks, read_data_file
 
 net_type = sys.argv[1]
 size = int(sys.argv[2])
@@ -40,9 +40,9 @@ base_net_name, base_net_name_size = get_base_network_name(net_type, size, param)
 
 for attack in attacks:
     print(attack)
-    
+
     n_seeds = max_seed - min_seed
-    csv_file_name = os.path.join(dir_name, base_net_name, base_net_name_size, 
+    csv_file_name = os.path.join(dir_name, base_net_name, base_net_name_size,
                                  '{}_nSeeds{:d}_cpp.csv'.format(attack, n_seeds))
     if not overwrite:
         if os.path.isfile(csv_file_name):
@@ -56,31 +56,20 @@ for attack in attacks:
 
     valid_its = 0
     for seed in range(min_seed, max_seed):
-       
+
         network = base_net_name_size + '_{:05d}'.format(seed)
-        attack_dir_name = os.path.join(dir_name, base_net_name, base_net_name_size, network, attack)
+        attack_dir_name = os.path.join(
+            dir_name, base_net_name, base_net_name_size, network, attack
+            )
 
-        ## Extract network file
-        tar_input_name = 'comp_data.tar.gz'
-        full_tar_input_name = os.path.join(attack_dir_name, tar_input_name)
-        if not os.path.exists(full_tar_input_name):
-            continue
-        tar = tarfile.open(full_tar_input_name, 'r:gz')
-        tar.extractall(attack_dir_name)
-        tar.close()
-
-        full_file_name  = os.path.join(attack_dir_name, 'comp_data.txt')
-        if not os.path.isfile(full_file_name):
+        ## Read data
+        try:
+            aux = read_data_file(attack_dir_name, 'comp_data', reader='numpy')
+        except FileNotFoundError:
             continue
 
         if verbose:
             print(seed)
-
-        ## Read data
-        aux = np.loadtxt(full_file_name)
-
-        ## Remove network file
-        os.remove(full_file_name)
 
         len_aux = aux.shape[0]
         len_aux = aux.shape[0]
@@ -112,10 +101,10 @@ for attack in attacks:
     Nsec_values = Nsec_values / valid_its
     meanS_values = meanS_values / valid_its
     chiDelta_values = chiDelta_values / valid_its
- 
+
     d = {
-        'f': np.arange(N)/N,  
-        'Sgcc': Sgcc_values, 
+        'f': np.arange(N)/N,
+        'Sgcc': Sgcc_values,
         'varSgcc': varSgcc_values,
         'Nsec': Nsec_values,
         'meanS': meanS_values,
