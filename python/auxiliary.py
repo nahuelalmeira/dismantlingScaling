@@ -142,3 +142,77 @@ def read_data_file(directory, base_name, reader, file_ext='.txt', compress_ext='
         os.remove(full_data_file_name)
 
     return data
+
+####################################################
+### Auxiliar methods for cut_nodes_statistics.py ###
+####################################################
+
+def get_position(net_type, size, net_dir=None):
+
+    if net_type == 'Lattice':
+        L = size
+        position = np.array([[i//L, i%L] for i in range(L*L)])
+    else:
+        L = np.sqrt(size)
+        position = read_data_file(net_dir, 'position', reader='numpy')
+        position = position * L
+
+    return position
+
+def get_max_pos(dir_name):
+
+    aux = read_data_file(dir_name, 'comp_data', reader='numpy')
+
+    Ngcc_values = aux[:,0][::-1]
+    delta_values = np.abs(np.diff(Ngcc_values))
+    max_pos = np.argmax(delta_values)
+    delta_max = delta_values[max_pos]
+
+    return max_pos, delta_max
+
+
+def load_delta_data(net_type, size, param, attack, seed):
+
+    dir_name = os.path.join('../networks', net_type)
+    base_net_name, base_net_name_size = get_base_network_name(net_type, size, param)
+    net_name = base_net_name_size + '_{:05d}'.format(seed)
+    base_net_dir = os.path.join(dir_name, base_net_name, base_net_name_size)
+    net_dir = os.path.join(base_net_dir, net_name)
+
+    attack_dir_name = os.path.join(base_net_dir, net_name, attack)
+    index_list = read_data_file(attack_dir_name, 'oi_list', reader='numpyInt')
+
+    g = read_data_file(net_dir, net_name, reader='igraph')
+
+    g.vs['oi'] = range(g.vcount())
+    g.vs['position'] = get_position(net_type, size, net_dir)
+    g['attack_order'] = index_list
+
+    max_pos, delta_max = get_max_pos(attack_dir_name)
+
+    return g, max_pos, delta_max
+
+
+####################################################
+###                                              ###
+####################################################
+
+
+def powerlaw(X, a, c):
+    return c*np.array(X)**a
+
+def getLinearReg(sizes, values, return_r2=False, t=1):
+
+    X = np.log(sizes)
+    Y = np.log(values)
+    coeffs, cov = np.polyfit(X, Y, 1, cov=True)
+    errors = np.sqrt(np.diag(cov))
+
+    intercept = coeffs[1]
+    slope = coeffs[0]
+    y_error = t*errors[0] ## Use three times standard error
+    Y_pred = intercept + X*slope
+
+    if return_r2:
+        return np.exp(Y_pred), slope, linear_regressor.score(X, Y)
+    return np.exp(Y_pred), slope, y_error

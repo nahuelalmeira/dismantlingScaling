@@ -6,52 +6,7 @@ import igraph as ig
 import numpy as np
 import pandas as pd
 from auxiliary import get_base_network_name, supported_attacks, read_data_file
-
-def get_position(net_type, size, net_dir=None):
-
-    if net_type == 'Lattice':
-        L = size
-        position = np.array([[i//L, i%L] for i in range(L*L)])
-    else:
-        L = np.sqrt(size)
-        position = read_data_file(net_dir, 'position', reader='numpy')
-        position = position * L
-
-    return position
-
-def get_max_pos(dir_name):
-
-    aux = read_data_file(dir_name, 'comp_data', reader='numpy')
-
-    Ngcc_values = aux[:,0][::-1]
-    delta_values = np.abs(np.diff(Ngcc_values))
-    max_pos = np.argmax(delta_values)
-    delta_max = delta_values[max_pos]
-
-    return max_pos, delta_max
-
-
-def load_data(net_type, size, param, attack, seed):
-
-    dir_name = os.path.join('../networks', net_type)
-    base_net_name, base_net_name_size = get_base_network_name(net_type, size, param)
-    net_name = base_net_name_size + '_{:05d}'.format(seed)
-    base_net_dir = os.path.join(dir_name, base_net_name, base_net_name_size)
-    net_dir = os.path.join(base_net_dir, net_name)
-
-    attack_dir_name = os.path.join(base_net_dir, net_name, attack)
-    index_list = read_data_file(attack_dir_name, 'oi_list', reader='numpyInt')
-
-    g = read_data_file(net_dir, net_name, reader='igraph')
-
-    g.vs['oi'] = range(g.vcount())
-    g.vs['position'] = get_position(net_type, size, net_dir)
-    g['attack_order'] = index_list
-
-    max_pos, delta_max = get_max_pos(attack_dir_name)
-
-    return g, max_pos, delta_max
-
+from auxiliary import load_delta_data
 
 net_type = sys.argv[1]
 size = int(sys.argv[2])
@@ -109,7 +64,7 @@ for attack in attacks:
     for seed in range(min_seed, max_seed):
         if verbose:
             print(seed)
-        g, max_pos, delta_max = load_data(net_type, size, param, attack, seed)
+        g, max_pos, delta_max = load_delta_data(net_type, size, param, attack, seed)
 
         attack_order = g['attack_order']
         to_delete = set(g.vs['oi']).difference(set(attack_order[:max_pos+1]))
