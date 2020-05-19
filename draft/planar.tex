@@ -99,17 +99,17 @@ In a recently published article, Fan, et al. proposed a new method to analyze ge
 where $N_1(t)$ is the size of the largest cluster after $t$ nodes are removed from the network. According to \cite{Fan2020}, $\Delta\sim L^{-\beta/\nu}$. We also define $t_c$ as the number of nodes removed such that the maximum in \ref{eq:Delta} is attained. In the thermodynamic limit, the percolation threshold coincides with $r_c = t_c/N$. Finally, the percolation strength is defined as $N_1(t_c)$. According to \cite{Fan2020}, these quantities, averaged over realizations, scale as 
 
 \begin{align}
-\Delta&\sim L^{-\beta/\nu} \\
-r_c(L) - r_c(\infty) &\sim L^{-1/\nu_1} \\
-N_1(L) &\sim L^{-d_f}.
+\Delta&\sim L^{-\beta/\nu} \label{eq:fan_Delta}\\
+r_c(L) - r_c(\infty) &\sim L^{-1/\nu_1} \label{eq:fan_rc}\\
+N_1(L) &\sim L^{-d_f}. \label{eq:fan_N1}
 \end{align}
 
 Also, the fluctuations for these quantities present a similar scaling 
 
 \begin{align}
-\chi_{\Delta} &\sim L^{-\beta/\nu} \\
-\chi_{r_c} &\sim L^{-1/\nu} \\
-\chi_{N_1} &\sim L^{-d_f}.
+\chi_{\Delta} &\sim L^{-\beta/\nu} \label{eq:fan_chiDelta} \\
+\chi_{r_c} &\sim L^{-1/\nu} \label{eq:fan_chirc}\\
+\chi_{N_1} &\sim L^{-d_f}. \label{eq:fan_chiN1}
 \end{align}
 
 Note that exponent $\nu_1$ does not coincide in general with the correlation length critical exponent $\nu$.
@@ -136,6 +136,94 @@ Other useful references: \cite{Boettcher2012,Trevelyan2018DegreeInformation,Cho2
 %\caption{Delaunay triangulation}
 %\end{figure}
 
+
+
+%\begin{figure}
+%\includegraphics[scale=0.3]{norrenbrock_fig1.pdf}
+%\includegraphics[scale=0.3]{norrenbrock_fig1_2.pdf}
+%\end{figure}
+
+%\begin{figure}
+%\includegraphics[scale=0.3]{meanS.pdf}
+%\includegraphics[scale=0.3]{meanS_2.pdf}
+%\end{figure}
+
+
+%\begin{figure}
+%\centering
+%\includegraphics[scale=0.3]{Btw_vs_BtwU_Lattice_L12.pdf}
+%\caption{Evolution of the IB and RB attacks over a lattice with $L=12$.}
+%\end{figure}
+
+
+%\begin{figure}
+%\centering
+%\includegraphics[scale=0.3]{Btw_vs_BtwU_DT_L12.pdf}
+%\caption{Evolution of the IB and RB attacks over a DT with $N=12^2$.}
+%\end{figure}
+
+\subsection{Characterization of the percolation transition}
+
+In Figure \ref{fig:gap_exponents} we show the scaling of the gap exponents (Eqs. \ref{eq:fan_Delta}-\ref{eq:fan_chiN1}). The exponent corresponding to $\Delta$ ---the largest relative jump in the largest cluster--- is consistent with $\beta = 0$ including uncertainty, which gives a strong evidence of a first-order transition. At first sight, it brings attention that $\Delta(L)$ increases with $L$, but this can be explained by finite-size effects (see Section \ref{sec:optimal_attack}). In addition, we can see that the largest cluster is not a fractal, as its scaling is consistent with $d_f = 2$, also consistent with a discontinuous transition. Regarding the percolation threshold, we can see from panel (c) that $r_c = 0$ gives a good power-law , thus indicating that the transition occurs at the origin of the process in the thermodynamic limit, in accordance with \cite{Norrenbrock2016FragmentationAttacks}.
+
+\subsection{Optimal attack on Lattices} \label{sec:optimal_attack}
+
+For a d-dimensional lattice, the optimal attack consists in breaking the network by recursively removing the nodes located over a d-1 hyperplane which intersects the center of the giant component. The largest jump in the giant component is then given by
+
+\begin{equation}
+\Delta = \dfrac{1}{L^d} \left[ L^d - L^{d-1} + 1 - L^{d-1} \dfrac{L-1}{2} \right] = \dfrac{1}{2} - \dfrac{1}{2L} + \dfrac{1}{L^d},
+\end{equation}
+
+and the position of the largest jump is located at $r_c = L^{-1}$. Although the largest relative jump goes to $1/2$ as $L\rightarrow \infty$, the value for finite-size systems is lower. The RB attack performs almost optimally for the 2D Lattice, as it can be seen in \ref{fig:Delta_Lattice}.
+
+\begin{figure}
+\centering
+\includegraphics[scale=0.3]{Delta_and_fcL_Lattice.pdf}
+\caption{\label{fig:Delta_Lattice} (Left) Maximum jump in the order parameter in a single realization of the RB attack over a 2-d lattice. Black curve: $\Delta = \dfrac{1}{2}-\dfrac{1}{2L} + \dfrac{1}{L^2}$, corresponding to split the lattice in halves. (Right) Scaling of the critical point for finite-size systems. As it can be seen, the RB attack performs almost optimally in this netowork}
+\end{figure}
+
+\subsection{Breaking nodes and fractals}
+
+In Figure \ref{fig:attack_draw} we show the network status after the first $t_c$ nodes are removed (i.e., right after the largest relative jump of the giant cluster takes place). We compare the 2D Lattice (left panels) with the DT (right panels), and different attacks. As the figure shows, the RB attack cuts the lattice by the main diagonal, and breaks the DT in two extensive components. Thus, we call this set of nodes the \emph{breaking nodes}. 
+
+\begin{figure}
+\centering
+\includegraphics[scale=0.3]{Lattice_vs_DT_L128_seed00000.png}
+\caption{\label{fig:attack_draw} Network status at $f_c$ for RB $(N = 128^2)$. After removing the green nodes, the network is splitted in two extensive clusters. The largest cluster correspond to the orange nodes and the second largest cluster to the purple nodes. The rest of the nodes are plotted in grey. For the Lattice, RB traces a diagonal and break the network in two clusters of almost the same size. For DT, the algorithm starts by removing the high-betweennesss nodes located at the periphery and then it finds a high betweenness ``percolating path'' across  the network. Although in the latter case the network is also splitted in two extensive components, there is a significant difference in size between the two largest clusters. }
+\end{figure}
+
+
+To characterize the geometry of the \emph{breaking nodes}, we estimated its fractal dimension using two common methods [CITE: Stanley book]. The first method, known as the box-counting method, consists in covering the space by non-overlapping boxes of linear size $\delta \leq L$ and count the number $N_B$  of such boxes containing at least one node belonging to the set. The procedure is repeated for different values of $\delta$. Fractal objects are expected to follow a relation $N_B(\delta) \sim \delta^{-d_B}$, where $d_B$, known as the box-counting dimension, is its characteristic length. For the second method, we select a random element of the set and consider a square window of linear size $l$ centered at the element. We count the number of elements of the set in the window and repeat the procedure for different values of $l$. We then average these values taking several seeds. For each value of $l$, the mass $M(l)$ is computed as the average over seed elements of the number of nodes in the window, and is expected to follow the scaling $M(l)\sim l^{d_f}$, where $d_f$ is the fractal dimension of the set. In Figure \ref{fig:Delta_Lattice} we show both estimations for the DT network and for the 2D Lattice. Coincident with Figure \ref{fig:attack_draw}, the fractal dimension for the set of removed nodes from the Lattice is equal to one, as the nodes are roughly arranged over a straight line. For the case of DT, a non-trivial scaling is seen, with a fractal dimension greater than one. Note that the values obtained using both methods are consistent ($d_B = 1.45\pm 0.16$ and $d_f = 1.43\pm 0.06$).
+
+There is a third way of estimating the fractal dimension of the set, which consists in using Equation \ref{eq:fan_rc}. According to this equation, the mass of the set scales as $M\sim N^{1-1/\nu_1} = L^{d_{f_2}}$, where $d_{f_2} := 2(1-1/\nu_1)$. Taking the value estimated for $\nu_1$, one obtains $d_{f_2} = 1.44$.
+
+The breaking nodes for the case of RB on the Lattice consist mainly in one of the main diagonals. Thus, if we take the spanning subgraph with vertex set equal to the breaking nodes, we have mainly isolated nodes. In contrast, when applying the same attack to the DT, the spanning subgraph corresponding to the breaking nodes has a large connected component. We call this component the \emph{backbone} of the breaking nodes. In Figure \ref{fig:fractal_dimension_backbone}, we measure the fractal dimension of this set. We can see that, in this case, the fractal dimension of the set is close to one, indicating that the backbone is not fractal, but a conventional curve. 
+
+As it can be infered from Figure \ref{fig:attack_draw}, the backbone itself is sufficient to break the network. We corroborated this proposition by measuring the relative size of the largest cluster after removing only the backbone nodes. As Figure \ref{fig:Sgcc_backbone} shows, $S_1$ has a comparable size after removing the backbone with the result of removing all the breaking nodes. 
+In terms of attack performance, we can say that, although the RB attack is very efficient in breaking the network (the percolation threshold is $r_c = 0$ in the thermodynamic limit), is not optimal, as the number of nodes that the attack removes scales more that linearly. But, if instead of removing the breaking nodes, they are only algorithmically identified, one can chose to remove only the backbone, disconnecting the network with an efficiency now close to optimal.
+
+
+\begin{figure}
+\centering
+\includegraphics[scale=0.3]{Fan2020_fig1_DT_BtwU.pdf}
+\caption{\label{fig:gap_exponents} Estimation of the critical exponents using the gap scaling proposed by Fan, et al. in \cite{Fan2020}, and taking $r_c(\infty) = 0$. }
+\end{figure}
+
+\begin{figure}
+\centering
+\includegraphics[scale=0.3]{df_L128.pdf}
+\caption{\label{fig:fractal_dimension} Fractal dimension of the breaking nodes for networks of size $N=128^2$. Left: Box-counting dimension; Right: estimation based on random seed sampling. (Blue) DT; (Orange) 2D Lattice.}
+\end{figure}
+
+\begin{figure}
+\centering
+\includegraphics[scale=0.3]{df_L256_conn.pdf}
+\caption{\label{fig:fractal_dimension_backbone} Fractal dimension of the backbone for a network of type DT of size $N=256^2$. Left: Box-counting dimension; Right: estimation based on random seed sampling.}
+\end{figure}
+
+
+
+
 \begin{figure}
 \centering
 \includegraphics[scale=0.25]{fig1_DT.pdf}
@@ -147,16 +235,6 @@ Other useful references: \cite{Boettcher2012,Trevelyan2018DegreeInformation,Cho2
 \includegraphics[scale=0.25]{order_par_and_susceptibility_RBl_DT.pdf}
 \caption{Oder parameter, susceptibility and size of second lurgest cluster for RB and RB with different cutoffs. $N = 1024$. As larger path lengths are taken into account, the attack becomes more efficient in dismantling the network, and the transition moves towards lower values of $f$. Also the peak in the susceptibility and second largest cluster increases, showing that the fluctuations become more relevant. Except for RB2, all curves corresponding to attacks with cutoff present a similar form. The case of RB2 deserves special attention, as it presents a sort of double transition.}
 \end{figure}
-
-%\begin{figure}
-%\includegraphics[scale=0.3]{norrenbrock_fig1.pdf}
-%\includegraphics[scale=0.3]{norrenbrock_fig1_2.pdf}
-%\end{figure}
-
-%\begin{figure}
-%\includegraphics[scale=0.3]{meanS.pdf}
-%\includegraphics[scale=0.3]{meanS_2.pdf}
-%\end{figure}
 
 
 
@@ -206,60 +284,6 @@ Other useful references: \cite{Boettcher2012,Trevelyan2018DegreeInformation,Cho2
 \centering
 \includegraphics[scale=0.3]{Sgcc_scaling_RB_f_renormalized_DT.pdf}
 \caption{Different attempts to collapsing the curves correspondig to $S_1$ for different network sizes.}
-\end{figure}
-
-%\begin{figure}
-%\centering
-%\includegraphics[scale=0.3]{Btw_vs_BtwU_Lattice_L12.pdf}
-%\caption{Evolution of the IB and RB attacks over a lattice with $L=12$.}
-%\end{figure}
-
-
-%\begin{figure}
-%\centering
-%\includegraphics[scale=0.3]{Btw_vs_BtwU_DT_L12.pdf}
-%\caption{Evolution of the IB and RB attacks over a DT with $N=12^2$.}
-%\end{figure}
-
-For a d-dimensional lattice, the optimal attack consists in breaking the network by recursively removing the nodes located over a d-1 hyperplane which intersects the center of the giant component. The largest jump in the giant component is then given by
-
-\begin{equation}
-\Delta = \dfrac{1}{L^d} \left[ L^d - L^{d-1} + 1 - L^{d-1} \dfrac{L-1}{2} \right] = \dfrac{1}{2} - \dfrac{1}{2L} + \dfrac{1}{L^d},
-\end{equation}
-
-and the position of the largest jump is located at $f_c = L^{-1}$.
-
-The RB attack performs almost optimally for the Lattice, as it can be seen in \ref{fig:Delta_Lattice}.
-
-\begin{figure}
-\centering
-\includegraphics[scale=0.3]{Delta_and_fcL_Lattice.pdf}
-\caption{\label{fig:Delta_Lattice} (Left) Maximum jump in the order parameter in a single realization of the RB attack over a 2-d lattice. Black curve: $\Delta = \dfrac{1}{2}-\dfrac{1}{2L} + \dfrac{1}{L^2}$, corresponding to split the lattice in halves. (Right) Scaling of the critical point for finite-size systems. As it can be seen, the RB attack performs almost optimally in this netowork}
-\end{figure}
-
-In Figure \ref{fig:attack_draw} we show the network status after the first $t_c$ nodes are removed. 
-
-\begin{figure}
-\centering
-\includegraphics[scale=0.3]{Lattice_vs_DT_L128_seed00000.pdf}
-\caption{\label{fig:attack_draw} Network status at $f_c$ for RB $(N = 128^2)$. After removing the green nodes, the network is splitted in two extensive clusters. The largest cluster correspond to the orange nodes and the second largest cluster to the purple nodes. The rest of the nodes are plotted in grey. For the Lattice, RB traces a diagonal and break the network in two clusters of almost the same size. For DT, the algorithm starts by removing the high-betweennesss nodes located at the periphery and then it finds a high betweenness ``percolating path'' across  the network. Although in the latter case the network is also splitted in two extensive components, there is a significant difference in size between the two largest clusters. }
-\end{figure}
-
-
-To characterize the geometry of the set composed by the first $t_c$ nodes, we estimated its fractal dimension using two common methods [CITE: Stanley book]. The first method, known as the box-counting method, consists in cover the space by non-overlapping boxes of linear size $\delta \leq L$ and count the number $N_B$  of such boxes containing at least one node belonging to the set. The procedure is repeated for different values of $\delta$. Fractal objects are expected to follow a relation $N_B(\delta) \sim \delta^{-d_B}$, where $d_B$, known as the box-counting dimension, is its characteristic length. For the second method, we select a random element of the set and consider a square window of linear size $l$ centered at the element. We count the number of elements of the set in the window and repeat the procedure for different values of $l$. We then average these values taking several seeds. The mass $M(l)$ of the set, defined as the average over seed elements of the number of nodes in a window of linear size $l$ is expected to follow the scaling $M(l)\sim l^{d_f}$, where $d_f$ is the fractal dimension of the set. In Figure \ref{eq:fractal_dimension} we show both estimations for the DT network and for the 2D Lattice. Coincident with Figure \ref{fig:attack_draw}, the fractal dimension for the set of removed nodes from the Lattice is equal to one, as the nodes are roughly arranged over a straight line. For the case of DT, a non-trivial scaling is seen, with a fractal dimension greater than one.
-
-We measured the fractal dimension of the nodes removed by the RB attack, up to the percolation transition. That is, we considered the first $t_c$ 
-
-\begin{figure}
-\centering
-\includegraphics[scale=0.3]{df_L128.pdf}
-\caption{\label{fig:fractal_dimension} Fractal dimension of the removed nodes. Left: Box-counting dimension; Right: estimation based on random seed sampling.}
-\end{figure}
-
-\begin{figure}
-\centering
-\includegraphics[scale=0.3]{Fan2020_fig1_DT_BtwU.pdf}
-\caption{\label{fig:fractal_dimension} Estimation of the critical exponents using the gap scaling proposed by Fan, et al. in \cite{Fan2020} }
 \end{figure}
 
 
