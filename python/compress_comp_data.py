@@ -13,9 +13,6 @@ verbose = False
 if 'verbose' in sys.argv:
     verbose = True
 
-if net_type in ['ER', 'RR', 'BA']:
-    N = int(size)
-
 attacks = []
 for attack in supported_attacks:
     if attack in sys.argv:
@@ -28,10 +25,10 @@ for attack in attacks:
     print(attack)
     good_seeds = 0
     for seed in range(min_seed, max_seed):
-        
+
         network = base_net_name_size + '_{:05d}'.format(seed)
         attack_dir_name = os.path.join(dir_name, base_net_name, base_net_name_size, network, attack)
-        
+
         full_file_name  = os.path.join(attack_dir_name, 'comp_data.txt')
         if not os.path.isfile(full_file_name):
             continue

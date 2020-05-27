@@ -28,6 +28,9 @@ def get_base_network_name(net_type, size, param):
     elif net_type == 'Lattice':
         L = int(size)
         base_net_name = 'Lattice_param'
+    elif net_type == 'PLattice':
+        L = int(size)
+        base_net_name = 'PLattice_param'
     elif net_type == 'Ld3':
         L = int(size)
         base_net_name = 'Ld3_param'
@@ -35,6 +38,8 @@ def get_base_network_name(net_type, size, param):
         base_net_name = 'MR_rMST'
     elif net_type == 'DT':
         base_net_name = 'DT_param'
+    elif net_type == 'PDT':
+        base_net_name = 'PDT_param'
     elif net_type == 'GG':
         base_net_name = 'GG_param'
     elif net_type == 'RN':
@@ -43,7 +48,7 @@ def get_base_network_name(net_type, size, param):
         print('ERROR: net_type not supported', file=sys.stderr)
         base_net_name = ''
 
-    if net_type in ['Lattice', 'Ld3']:
+    if net_type in ['Lattice', 'PLattice', 'Ld3']:
         base_net_name_size = base_net_name + '_L{}'.format(L)
     else:
         base_net_name_size = base_net_name + '_N{}'.format(N)
@@ -149,7 +154,7 @@ def read_data_file(directory, base_name, reader, file_ext='.txt', compress_ext='
 
 def get_position(net_type, size, net_dir=None):
 
-    if net_type == 'Lattice':
+    if net_type in ['Lattice', 'PLattice']:
         L = size
         position = np.array([[i//L, i%L] for i in range(L*L)])
     else:
@@ -179,13 +184,23 @@ def load_delta_data(net_type, size, param, attack, seed):
     base_net_dir = os.path.join(dir_name, base_net_name, base_net_name_size)
     net_dir = os.path.join(base_net_dir, net_name)
 
+    if net_type in ['PDT', 'GG', 'RN', 'MR']:
+        ## Directory corresponding to DT (in case other spatial network is used)
+        DT_dir_name = os.path.join('../networks', 'DT')
+        DT_base_net_name, DT_base_net_name_size = get_base_network_name('DT', size, param)
+        DT_net_name = DT_base_net_name_size + '_{:05d}'.format(seed)
+        DT_base_net_dir = os.path.join(DT_dir_name, DT_base_net_name, DT_base_net_name_size)
+        pos_net_dir = os.path.join(DT_base_net_dir, DT_net_name)
+    else:
+        pos_net_dir = net_dir
+
     attack_dir_name = os.path.join(base_net_dir, net_name, attack)
     index_list = read_data_file(attack_dir_name, 'oi_list', reader='numpyInt')
 
     g = read_data_file(net_dir, net_name, reader='igraph')
 
     g.vs['oi'] = range(g.vcount())
-    g.vs['position'] = get_position(net_type, size, net_dir)
+    g.vs['position'] = get_position(net_type, size, pos_net_dir)
     g['attack_order'] = index_list
 
     max_pos, delta_max = get_max_pos(attack_dir_name)
@@ -201,7 +216,7 @@ def load_delta_data(net_type, size, param, attack, seed):
 def powerlaw(X, a, c):
     return c*np.array(X)**a
 
-def getLinearReg(sizes, values, return_r2=False, t=1):
+def getLinearReg(sizes, values, t=1):
 
     X = np.log(sizes)
     Y = np.log(values)
@@ -213,6 +228,4 @@ def getLinearReg(sizes, values, return_r2=False, t=1):
     y_error = t*errors[0] ## Use three times standard error
     Y_pred = intercept + X*slope
 
-    if return_r2:
-        return np.exp(Y_pred), slope, linear_regressor.score(X, Y)
     return np.exp(Y_pred), slope, y_error

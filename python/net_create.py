@@ -64,6 +64,9 @@ for seed in seeds:
     elif net_type == 'Lattice':
         L = int(size)
         G = ig.Graph().Lattice(dim=[L, L], circular=False)
+    elif net_type == 'PLattice':
+        L = int(size)
+        G = ig.Graph().Lattice(dim=[L, L], circular=True)
     elif net_type == 'Ld3':
         L = int(size)
         G = ig.Graph().Lattice(dim=[L, L, L], circular=False)
@@ -74,7 +77,7 @@ for seed in seeds:
         else:
             r = float(param)
             G = create_proximity_graph(net_type, N=N, r=r, random_seed=seed)
-    elif net_type in ['DT', 'GG', 'RN']:
+    elif net_type in ['DT', 'GG', 'RN', 'PDT']:
         N = int(size)
         G = create_proximity_graph(net_type, N=N, random_seed=seed)
 
