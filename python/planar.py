@@ -4,6 +4,14 @@ import igraph as ig
 import scipy.spatial
 import scipy.sparse.csgraph
 
+spatial_net_types = [
+    'DT',
+    'PDT',
+    'GG',
+    'RN',
+    'MR'
+]
+
 def distance(s, t, points=None):
 
     points = np.array(points)
