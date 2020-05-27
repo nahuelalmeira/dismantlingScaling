@@ -85,8 +85,8 @@ for seed in seeds:
         print('Network "' + net_name + '" will be considered as undirected.')
         g.to_undirected()
 
-    N0 = g.vcount()
-    g.vs['original_index'] = range(N0)
+    N = g.vcount()
+    g.vs['original_index'] = range(N)
 
     f = float(str_f)
 
