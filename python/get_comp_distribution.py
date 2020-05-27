@@ -12,9 +12,6 @@ str_f = sys.argv[4]
 attack = sys.argv[5]
 max_seed = int(sys.argv[6])
 
-if net_type in ['ER', 'RR', 'BA', 'DT', 'GG', 'RN']:
-    N = int(size)
-
 overwrite = False
 if 'overwrite' in sys.argv:
     overwrite = True

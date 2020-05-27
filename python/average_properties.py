@@ -12,8 +12,14 @@ param = sys.argv[3]
 min_seed = int(sys.argv[4])
 max_seed = int(sys.argv[5])
 
-if net_type in ['ER', 'RR', 'BA', 'MR', 'DT']:
+if net_type in ['ER', 'RR', 'BA', 'MR', 'DT', 'PDT']:
     N = int(size)
+elif net_type in ['Lattice', 'PLattice']:
+    L = int(size)
+    N = L*L
+elif net_type == 'Ld3':
+    L = int(size)
+    N = L*L*L
 
 overwrite = False
 if 'overwrite' in sys.argv:

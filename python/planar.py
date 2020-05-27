@@ -4,12 +4,6 @@ import igraph as ig
 import scipy.spatial
 import scipy.sparse.csgraph
 
-spatial_net_types = [
-    'DT', # Delaunay Triangulation
-    'GG', # Gabriel graph
-    'RN', # Relative neighborhood
-]
-
 def distance(s, t, points=None):
 
     points = np.array(points)
@@ -27,14 +21,52 @@ def create_points(N, d=2, random_seed=None):
     np.random.seed(random_seed)
     return np.random.random((N, d))
 
-def create_dt_edgelist(points):
+def replicate(points):
+
+    replicated_points = np.array(points)
+    for i in [-1, 0, 1]:
+        for j in [-1, 0, 1]:
+            if i == 0 and j == 0:
+                continue
+            tile_points = np.array(points)
+            tile_points[:,0] = points[:,0] + j
+            tile_points[:,1] = points[:,1] + i
+            replicated_points = np.concatenate((replicated_points, tile_points), axis=0)
+
+    return replicated_points
+
+def get_dt_simplices(points, periodic=False):
+
+    if not periodic:
+        tri = scipy.spatial.Delaunay(points)
+        return tri.simplices
+
+    N = len(points)
+    rep_points = replicate(points)
+    rep_tri = scipy.spatial.Delaunay(rep_points)
+
+    filtered_rep_simplices = []
+    for simplex in rep_tri.simplices:
+        if set(simplex).intersection(set(range(N))):
+            filtered_rep_simplices.append(simplex)
+
+    filtered_rep_simplices = np.array(filtered_rep_simplices)
+
+    relabeled_simplices = []
+    for simplex in filtered_rep_simplices:
+        relabeled_simplices.append([simplex[i]%N for i in range(3)])
+    relabeled_simplices = np.unique(np.sort(relabeled_simplices, axis=1), axis=0)
+
+    return relabeled_simplices
+
+def create_dt_edgelist(points, periodic=False):
 
     points = np.array(points)
 
-    tri = sp.spatial.Delaunay(points)
+    simplices = get_dt_simplices(points, periodic=periodic)
 
     edgeset = set([])
-    for t in tri.simplices:
+    for t in simplices:
         u, v, w = t
         if u < v:
             edgeset.add((u,v))
@@ -259,6 +291,8 @@ def create_proximity_graph(model, N=None, points=None, r=None, distances=None,
         edgelist = create_mr_edgelist(points, r, distances)
     elif model == 'DT':
         edgelist = create_dt_edgelist(points)
+    elif model == 'PDT':
+        edgelist = create_dt_edgelist(points, periodic=True)
     elif model == 'RN':
         edgelist, _ = create_rn_edgelist(points)
     elif model == 'GG':
