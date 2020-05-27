@@ -202,6 +202,9 @@ The breaking nodes for the case of RB on the Lattice consist mainly in one of th
 As it can be infered from Figure \ref{fig:attack_draw}, the backbone itself is sufficient to break the network. We corroborated this proposition by measuring the relative size of the largest cluster after removing only the backbone nodes. As Figure \ref{fig:Sgcc_backbone} shows, $S_1$ has a comparable size after removing the backbone with the result of removing all the breaking nodes. 
 In terms of attack performance, we can say that, although the RB attack is very efficient in breaking the network (the percolation threshold is $r_c = 0$ in the thermodynamic limit), is not optimal, as the number of nodes that the attack removes scales more that linearly. But, if instead of removing the breaking nodes, they are only algorithmically identified, one can chose to remove only the backbone, disconnecting the network with an efficiency now close to optimal.
 
+\subsection{Attacks with approximate betweenness}
+
+In this section we compare the RB attack with attacks using $\ell$-betweenness, i.e, computing betweenness using only paths up to length $\ell$. 
 
 \begin{figure}
 \centering
@@ -211,14 +214,23 @@ In terms of attack performance, we can say that, although the RB attack is very 
 
 \begin{figure}
 \centering
-\includegraphics[scale=0.3]{df_L128.pdf}
+\includegraphics[scale=0.3]{df_L128_BtwU.pdf}
 \caption{\label{fig:fractal_dimension} Fractal dimension of the breaking nodes for networks of size $N=128^2$. Left: Box-counting dimension; Right: estimation based on random seed sampling. (Blue) DT; (Orange) 2D Lattice.}
 \end{figure}
 
 \begin{figure}
 \centering
-\includegraphics[scale=0.3]{df_L256_conn.pdf}
+\includegraphics[scale=0.3]{df_L256_BtwU_conn.pdf}
 \caption{\label{fig:fractal_dimension_backbone} Fractal dimension of the backbone for a network of type DT of size $N=256^2$. Left: Box-counting dimension; Right: estimation based on random seed sampling.}
+\end{figure}
+
+
+
+
+\begin{figure}
+\centering
+\includegraphics[scale=0.3]{peak_shifting_RBl_rc_DT.pdf}
+\caption{(Left) Shift of the position of the percolation threshold for the RB attacks with cutoffs. Dashed lines indicate the corresponding valu for the RB attack. (Right) Scaling of the $\ell^*$ with the system linear size. Here, $\ell^*$ is defined as the minimum $\ell$ such that the percolation threshold  for the RB-$\ell^*$ attack coincides with the full RB attack. [COMENTARIO: No tengo ning\'un argumento para suponer que el scaling es el correcto, nada m\'as prob\'e con algunas funciones y esa anduvo m\'as o menos bien.]}
 \end{figure}
 
 
