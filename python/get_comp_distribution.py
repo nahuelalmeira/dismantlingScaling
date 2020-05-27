@@ -71,6 +71,7 @@ for seed in seeds:
     try:
         g = read_data_file(net_dir, net_name, reader='igraph')
         oi_values = read_data_file(attack_dir, 'oi_list', reader='numpyInt')
+        oi_values = np.array(oi_values) ## In case oi_values is a single value
     except FileNotFoundError:
         print('File could not be read')
         continue
@@ -90,7 +91,7 @@ for seed in seeds:
 
     f = float(str_f)
 
-    if len(oi_values) and len(oi_values) < int(f*N):
+    if len(oi_values) < int(f*N):
         print('Not enough oi_values')
         continue
 
