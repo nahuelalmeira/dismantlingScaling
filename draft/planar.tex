@@ -230,8 +230,23 @@ In this section we compare the RB attack with attacks using $\ell$-betweenness, 
 \begin{figure}
 \centering
 \includegraphics[scale=0.3]{peak_shifting_RBl_rc_DT.pdf}
-\caption{(Left) Shift of the position of the percolation threshold for the RB attacks with cutoffs. Dashed lines indicate the corresponding valu for the RB attack. (Right) Scaling of the $\ell^*$ with the system linear size. Here, $\ell^*$ is defined as the minimum $\ell$ such that the percolation threshold  for the RB-$\ell^*$ attack coincides with the full RB attack. [COMENTARIO: No tengo ning\'un argumento para suponer que el scaling es el correcto, nada m\'as prob\'e con algunas funciones y esa anduvo m\'as o menos bien.]}
+\caption{\label{fig:rc_per_cutoff} (Left) Shift of the position of the percolation threshold for the RB attacks with cutoffs. Dashed lines indicate the corresponding valu for the RB attack. (Right) Scaling of the $\ell^*$ with the system linear size. Here, $\ell^*$ is defined as the minimum $\ell$ such that the percolation threshold  for the RB-$\ell^*$ differs from the full RB attack in less than $1\%$.}
 \end{figure}
+
+
+\begin{figure}
+\centering
+\includegraphics[scale=0.3]{Sgcc_scaling_RB_DT.pdf}
+\caption{(Left) Collapse for the order parameter $S_1$ for networks attacked using the RB strategy. (Right) The same, but using RB$\ell^*$, where the value of $\ell^*$ was obtained in the same way as for Figure \ref{fig:rc_per_cutoff}. }
+\end{figure}
+
+
+\begin{figure}
+\centering
+\includegraphics[scale=0.3]{meanS_scaling_RB_DT.pdf}
+\caption{(Left) Collapse for the susceptibility $\langle s \rangle$ for networks attacked using the RB strategy. (Right) The same, but using RB$\ell^*$, where the value of $\ell^*$ was obtained in the same way as for Figure \ref{fig:rc_per_cutoff}. }
+\end{figure}
+
 
 
 
@@ -274,11 +289,6 @@ In this section we compare the RB attack with attacks using $\ell$-betweenness, 
 \caption{Position of the peak in the susceptibility and second largest cluster as a function of the inverse network size, for the RB attack. The data is consistent with a scaling of the form of Eq. \ref{eq:peak_pos_shift}, with $f_c = 0$ and $\theta \simeq 3$. This implies that, for the thermodynamic limit $N\rightarrow \infty$, only a sub-linear fraction of nodes has to be removed in order to dismantle the network. This result is consistent with the result obtained by \cite{Norrenbrock2016FragmentationAttacks}, using a scaling for the area under the curve of the order parameter.}
 \end{figure}
 
-\begin{figure}
-\centering
-\includegraphics[scale=0.3]{Sgcc_scaling_RB_DT.pdf}
-\caption{Collapse for the order parameter $S_1$ using different values of $\nu$ and considering $f_c^{\mathrm{(RB)}} = 0$.}
-\end{figure}
 
 \begin{figure}
 \centering
