@@ -148,6 +148,18 @@ def read_data_file(directory, base_name, reader, file_ext='.txt', compress_ext='
 
     return data
 
+
+def get_number_of_nodes(net_type, size):
+    if net_type in ['ER', 'RR', 'BA', 'MR', 'DT', 'PDT']:
+        N = int(size)
+    elif net_type in ['Lattice', 'PLattice']:
+        L = int(size)
+        N = L*L
+    elif net_type == 'Ld3':
+        L = int(size)
+        N = L*L*L
+    return N
+
 ####################################################
 ### Auxiliar methods for cut_nodes_statistics.py ###
 ####################################################

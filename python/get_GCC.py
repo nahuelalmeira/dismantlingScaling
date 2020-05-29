@@ -11,10 +11,9 @@ param = sys.argv[3]
 min_seed = int(sys.argv[4])
 max_seed = int(sys.argv[5])
 
+overwrite = False
 if 'overwrite' in sys.argv:
     overwrite = True
-else:
-    overwrite = False
 
 dir_name = os.path.join('../networks', net_type)
 
@@ -28,7 +27,7 @@ for seed in seeds:
     print(net_name)
 
     net_dir_name = os.path.join(dir_name, base_net_name, net_name)
-    input_name = net_name + '.txt'   
+    input_name = net_name + '.txt'
     full_input_name = os.path.join(net_dir_name, input_name)
     if not os.path.isfile(full_input_name):
         continue
@@ -39,20 +38,19 @@ for seed in seeds:
         if os.path.isfile(gcc_file):
             continue
 
-    g = ig.Graph().Read_Edgelist(full_input_name, directed=False)    
+    g = ig.Graph().Read_Edgelist(full_input_name, directed=False)
 
     if not g.is_simple():
         print('Network "' + net_name + '" will be considered as simple.')
         g.simplify()
-        
+
     if g.is_directed():
         print('Network "' + net_name + '" will be considered as undirected.')
         g.to_undirected()
-        
+
     if not g.is_connected():
         print('Only giant component of network "' + net_name + '" will be considered.')
         components = g.components(mode='weak')
         g = components.giant()
 
     g.write_edgelist(gcc_file)
-    

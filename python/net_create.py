@@ -14,14 +14,14 @@ size = int(sys.argv[2])
 param = sys.argv[3]
 min_seed = int(sys.argv[4])
 max_seed = int(sys.argv[5])
+
 compress = True
 if 'compress_false' in sys.argv:
     compress = False
 
+overwrite = False
 if 'overwrite' in sys.argv:
     overwrite = True
-else:
-    overwrite = False
 
 seeds = range(min_seed, max_seed)
 dir_name = os.path.join('../networks', net_type)

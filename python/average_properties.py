@@ -5,6 +5,7 @@ import igraph as ig
 import numpy as np
 import pandas as pd
 from auxiliary import get_base_network_name, supported_attacks, simple_props, get_property_file_name
+from auxiliary import get_number_of_nodes
 
 net_type = sys.argv[1]
 size = int(sys.argv[2])
@@ -12,14 +13,7 @@ param = sys.argv[3]
 min_seed = int(sys.argv[4])
 max_seed = int(sys.argv[5])
 
-if net_type in ['ER', 'RR', 'BA', 'MR', 'DT', 'PDT']:
-    N = int(size)
-elif net_type in ['Lattice', 'PLattice']:
-    L = int(size)
-    N = L*L
-elif net_type == 'Ld3':
-    L = int(size)
-    N = L*L*L
+N = get_number_of_nodes(net_type, size)
 
 overwrite = False
 if 'overwrite' in sys.argv:
