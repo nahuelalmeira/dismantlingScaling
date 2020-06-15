@@ -75,8 +75,6 @@ for seed in seeds:
         print('File could not be read')
         continue
 
-    new_seeds.append(seed)
-
     if not g.is_simple():
         print('Network "' + net_name + '" will be considered as simple.')
         g.simplify()
@@ -98,7 +96,10 @@ for seed in seeds:
     g.delete_vertices(oi_values)
 
     components = g.components(mode='WEAK')
-    Ngcc = components.giant().vcount()
+    try:
+        Ngcc = components.giant().vcount()
+    except ValueError: # TODO: Check DT RB N8192 00738
+        continue
     comp_sizes = [len(c) for c in components]
 
     if not include_gcc: ## Do not count GCC
@@ -107,6 +108,8 @@ for seed in seeds:
     with open(components_file, 'a') as c_file:
         for c_size in comp_sizes:
             c_file.write('{:d}\n'.format(c_size))
+
+    new_seeds.append(seed)
 
 new_seeds = np.array(new_seeds, dtype=int)
 all_seeds = np.sort(np.concatenate((past_seeds, new_seeds)))
