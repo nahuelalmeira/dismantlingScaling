@@ -1,0 +1,167 @@
+\documentclass{article}
+    % General document formatting
+    \usepackage[margin=0.7in]{geometry}
+    \usepackage{hyperref}
+    \usepackage[parfill]{parskip}
+    \usepackage[utf8]{inputenc}
+    
+    % Related to math
+    \usepackage{amsmath,amssymb,amsfonts,amsthm}
+
+\usepackage{graphicx}
+\graphicspath{{figs/}}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=cyan,
+}
+
+\begin{document}
+
+\section{Introduction}
+
+\subsection{Percolation}\label{subsec:Percolation}
+
+Site percolation in complex networks can be stated by considering that each node of the network can be either \emph{occupied}, with probability $p$, or \emph{unoccupied}, with probability $1-p$. Only occupied nodes can be connected, thus links connecting at least one unoccupied node are also considered unoccupied. If $p=0$, the network is empty and if $p=1$, the original network is recovered. When the occupation probability is small, occupied nodes belong to different small-sized components, but above a critical value $p=p_c$, one of the components acquires an extensive size. At this point, it is said that the system percolates. The extensive component is known as the \emph{giant connected component} (GCC) and the critical point is referred to as the \emph{percolation threshold}.
+
+Let $N$ be the linear size of the network and $N_1$ the size of the GCC. In the thermodynamic limit $N\rightarrow \infty$, percolation theory states that the relative size $S_1 = N_1/N$ follows the critical behavior
+%
+\begin{equation}
+    S_1=
+    \begin{cases}
+    0 &  p <  p_c, \\
+    a(p-p_c)^\beta &  p \ge p_c,
+    \end{cases}
+\end{equation}
+%
+where $a$ is a proportionality constant and $\beta>0$ is the critical exponent associated with $S_1$. The transition between the percolated and non-percolated state has been widely studied in statistical physics, and it has been shown to exhibit a continuous transition in many different network models. In this framework, $S_1$ is considered the order parameter of the transition. 
+
+As it occurs in continuous transitions, other measures also manifest a critical behavior near the percolation threshold. One such measure is the average cluster size, which plays the role of susceptibility and is computed as 
+%
+\begin{equation}
+    \langle s \rangle = \frac{\sum_{s}^{'} s^2 n_s(p)}{\sum_s^{'} s n_s(p)} 
+\end{equation}
+%
+where $n_s(p)$ is the number of clusters of size $s$ per node and the primed sum excludes the GCC. At the critical point, $\langle s \rangle$ diverges in the thermodynamic limit as $\langle s \rangle  \sim |p-p_c|^{-\gamma}$, with $\gamma>0$. Also, $n_s(p)$ has its own critical behavior and close to $p_c$ it becomes very heterogeneous, being well described by the expression
+%
+\begin{equation} \label{eq:ns}
+n_s(p) \sim s^{-\tau} e^{-s/s^*}.
+\end{equation}
+%
+Here $s^*$ represents the characteristic cluster size, which scales as $s^* \sim |p-p_c|^{-1/\sigma}$. Then, at $p=p_c$ the number of clusters of size $s$ follows a power-law $n_s(p) \sim s^{-\tau}$. Finally, the correlation length $\xi$, defined as the geometrical length of a typical cluster, scales as $\xi \sim |p-p_c|^{-\nu}$, where $\nu>0$~\cite{StaufferBook}.
+
+
+The theory of critical phenomena states that continuous transitions can be fully characterized by its critical exponents. If the same exponents are shared between two systems, they belong to the same universality class. In percolation only two exponents are independent, and the others can be derived using different scaling relations. For example, the exponent associated with the cluster size distribution can be obtained as \cite{StaufferBook}
+%
+\begin{equation}\label{eq:scaling_tau}
+    \tau = 2 + \dfrac{\beta}{\gamma + \beta}.
+\end{equation}
+%
+As $\beta$ and $\gamma$ are both positive, equation \ref{eq:scaling_tau} shows that $\tau \geq 2$. Another useful relation is given by \cite{BrankovBook, Fortunato2011ExplosiveGraphs}
+%
+\begin{equation} \label{eq:gamma_beta_nu}
+    2\beta + \gamma = d\nu,
+\end{equation}
+%
+where $d$ is the system dimension.
+
+From a theoretical point of view, standard percolation and node removal are different processes~\cite{Cohen2000BreakdownAttack}. Percolation is an equilibrium reversible process, well described by the equilibrium statistical physics. 
+On the other hand, node removal under specific attacks are irreversible  processes such as the evolving rules that turn out in explosive percolation transitions~\cite{DaCosta2014SolutionExponents}.
+Being aware of this, we relate the percolation probability $p$ with a node removal procedure in which a fraction $f=1-p$ of nodes was removed. Using this relation we can apply the tools provided by percolation theory to the attack strategies previously described.
+
+\subsection{Percolation transition on random spatial networks}
+
+Percolation transition on random spatial networks has been largely studied \cite{Melchert2013,Becker2009,Norrenbrock2016a}. Although the location of the percolation threshold depends on the model studied, in general the universaillity class is the same as regular lattices. In particular, Norrenbrock, et al \cite{Norrenbrock2016FragmentationAttacks} study the percolation transiton for recalculated degree-based (RD) and betweenness-based (RB) attacks on four different models of spatial networks. They conclude that the RD attack belongs to the standard 2D percolation transition universality class. With respect to RB, they show that the percolation threshold is located at $f_c = 0$, but they do not arrive at a conclusion regarding other characteristics of the transition.
+
+
+\subsection{Finite-size scaling analysis}
+
+
+Finite-size scaling analysis is one of the most important tools in the study of  continuous phase transitions and in particular to obtain the associated critical exponents~\cite{Cho2010Finite-sizeTransitions, Fortunato2011ExplosiveGraphs, Zhu2017FiniteTransition}.
+According to this theory, the divergence of the correlation length at the critical point implies that every variable of the system becomes scale-independent at this point. For a finite-size system of linear size $L$, this produces a scaling of the form
+%
+\begin{equation}
+    X \sim L^{-\omega/\nu} F[(f-f_c) L^{1/\nu}],
+\end{equation}
+%
+where $\omega$ is an exponent related to the variable $X$. For $f=f_c$, the variable behaves as $X \sim L^{-\omega/\nu}$. This relation holds asymptotically, i.e. in the limit $L \rightarrow \infty$ and $f \rightarrow f_c$, and it can be used to obtain the ratio $\omega/\nu$ by computing $X(f_c, L)$ for different system sizes. In addition, the plot of $L^{\omega/\nu}X$ as a function of $(f_c-f) L^{1/\nu}$ yields to the universal function $F$, which does not depend on $L$, so curves corresponding to different sizes collapse. 
+
+
+In this work, we make use of two scaling relations. The first one is the scaling of the cluster relative sizes, which can be stated as  \cite{Zhu2017FiniteTransition}
+%
+\begin{equation}
+\label{eq:comp-scaling}
+S_i(f,L) \sim L^{-\beta /\nu} \tilde{S}_i[(f-f_c) L^{1/\nu}].
+\end{equation}
+%
+ Here, the subscript $i=1,2, ...$ indicates the rank of each component, sorted by size in decreasing order. In particular, we will be interested in the order parameter $S_1$ and in the size of the second cluster $S_2L^d$. The second scaling relation involves the average cluster size and can be stated as
+%
+\begin{equation}
+\label{eq:suscep-scaling}
+\langle s \rangle(f,L)  \sim L^{\gamma / \nu} \tilde{S} [(f-f_c) L^{1/\nu}].
+\end{equation}
+%
+
+
+For a finite-size system, the percolation threshold does not necesarly coincide with the corresponding value for $N\rightarrow \infty$. In general, the difference between these values presents a scaling in the form
+
+\begin{equation} \label{eq:peak_pos_shift}
+f_c(L) - f_c = b L^{-1/\nu}.
+\end{equation}
+
+\section{Results}
+
+\subsection{Recalculated-Betweenness attack on DT networks}
+
+In Figure \ref{fig:collapse_RB_DT} we show different observables of the phase transition for different sizes.
+
+
+\begin{figure}
+\centering
+\includegraphics[scale=0.25]{collapse_RB_DT.pdf}
+\caption{\label{fig:collapse_RB_DT} (Upper panels) Relative size of the giant component (left), average finite-component size (center) and size of the second largest component for the DT network as a function of the fraction of nodes removed under the RB attack. (Lower panels) Collapse of the curves.}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\includegraphics[scale=0.25]{beta_gamma_nu_scaling_RB_DT.pdf}
+\caption{\label{fig:exponents}(Left) Scaling for the peaks of $\langle s \rangle$ and $S_2 L^2$ as a function of the linear size $L$. (Right) Scaling for the shifting of the finite-size percolation threshold, defined as the position of the peak of the corresponding measure.}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\includegraphics[scale=0.25]{gap_exp_scaling_RB_DT.pdf}
+\caption{\label{fig:gap_exp} Estimation of the critical exponents using the gap scaling proposed by Fan, et al. in \cite{Fan2020}.}
+\end{figure}
+
+
+\subsection{Attacks with approximate betweenness}
+
+In this section we compare the RB attack with attacks using $\ell$-betweenness, i.e, computing betweenness using only paths up to length $\ell$. 
+
+
+\begin{figure}
+\centering
+\includegraphics[scale=0.25]{order_par_and_susceptibility_RBl_DT.pdf}
+\caption{\label{fig:RBl_attacks} Performance of RB$\ell$ attacks on a DT network of size $L^2=1024$. For this size, $\ell^*=25$.}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\includegraphics[scale=0.3]{peak_shifting_RBl_rc_DT.pdf}
+\caption{\label{fig:rc_per_cutoff} (Left) Shift of the position of the percolation threshold for the RB attacks with cutoffs. Dashed lines indicate the corresponding valu for the RB attack. (Right) Scaling of the $\ell^*$ with the system linear size. Here, $\ell^*$ is defined as the minimum $\ell$ such that the percolation threshold  for the RB-$\ell^*$ differs from the full RB attack in less than $1\%$. The grey lines correspond to the diameter (solid) and average shortest-path length (dot-dashed) for the DT network prior to the attack, which scale both as $\sim L^{\omega}$, with $\omega = 0.79\pm 0.01$.}
+\end{figure}
+
+
+
+\bibliographystyle{unsrt}
+\bibliography{library}
+
+
+\end{document}
+
