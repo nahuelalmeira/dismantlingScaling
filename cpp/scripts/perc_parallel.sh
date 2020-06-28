@@ -14,7 +14,7 @@ SEED=$( printf %05d $6 )
 BASE_DIR="${BASE_DIR}/${NET_TYPE}"
 BASE_NET="${NET_TYPE}_${PARAM}"
 
-if [ "${NET_TYPE}" == "Lattice" ] || [ "${NET_TYPE}" == "Ld3" ]; then
+if [ "${NET_TYPE}" == "Lattice" ] || [ "${NET_TYPE}" == "PLattice" ] || [ "${NET_TYPE}" == "Ld3" ]; then
   BASE_NET_DIR="${BASE_DIR}/${BASE_NET}/${BASE_NET}_L${N}"
   NET_NAME="${BASE_NET}_L${N}_${SEED}"
 else
