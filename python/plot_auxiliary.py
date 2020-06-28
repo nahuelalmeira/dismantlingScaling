@@ -36,7 +36,7 @@ attack_colors = {
 }
 
 
-def load_delta(net_type, size, param, attack, nseeds=None):
+def load_delta(net_type, size, param, attack, nseeds=None, min_nseeds=None):
     dir_name = os.path.join('../networks', net_type)
     base_net_name, base_net_name_size = get_base_network_name(net_type, size, param)
     net_dir_name = os.path.join(dir_name, base_net_name,
@@ -49,25 +49,28 @@ def load_delta(net_type, size, param, attack, nseeds=None):
     else:
         files = [file for file in os.listdir(net_dir_name) if 'Delta' in file]
         files = [file for file in files if attack + '_nSeeds' in file]
-        #print(files)
+
         if not files:
-            raise FileNotFoundError
+            raise FileNotFoundError('No file exist')
+        nseeds_values = [int(file.split('nSeeds')[1].split('.')[0]) for file in files]
+
+        if min_nseeds:
+            if np.max(nseeds_values) < min_nseeds:
+                raise FileNotFoundError('No file exist with seeds enough')
+
         idx = np.argmax([int(file.split('nSeeds')[1].split('.')[0]) for file in files])
         file_name = files[idx]
         delta_file_name = os.path.join(net_dir_name, file_name)
     delta_values = np.loadtxt(delta_file_name)
     return delta_values
 
-def average_delta(net_type, param, attack, N_values, nseeds):
+def average_delta(net_type, param, attack, N_values, nseeds=None, min_nseeds=None):
     mean_pos_values = []
     std_pos_values = []
     mean_delta_values = []
     std_delta_values = []
     for N in N_values:
-        try:
-            delta_values = load_delta(net_type, N, param, attack, nseeds)
-        except:
-            delta_values = load_delta(net_type, N, param, attack, nseeds//10)
+        delta_values = load_delta(net_type, N, param, attack, nseeds=nseeds, min_nseeds=min_nseeds)
         pos, delta = delta_values.mean(axis=0)
         std_pos, std_delta = delta_values.std(axis=0)
         mean_pos_values.append(pos)
@@ -228,7 +231,7 @@ def compute_crossings(dfs, min_f, max_f, method='beta', only_next=False, verbose
     return inter_values
 
 
-def get_rc_values(sizes, l_values=None, net_type='DT', param='param'):
+def get_rc_values(sizes, l_values=None, net_type='DT', param='param', nseeds=None, min_nseeds=None):
 
     if l_values is None:
         l_values = np.arange(2, 100)
@@ -242,7 +245,9 @@ def get_rc_values(sizes, l_values=None, net_type='DT', param='param'):
         rc_values_std[size] = []
         for attack in attacks:
             try:
-                delta_values = load_delta(net_type, size, param, attack)
+                delta_values = load_delta(
+                    net_type, size, param, attack, nseeds=nseeds, min_nseeds=min_nseeds
+                )
                 rc = delta_values[:,0].mean(axis=0)
                 rc_std = delta_values[:,0].std(axis=0) / np.sqrt(delta_values.shape[0]-1)
                 rc_values[size].append(rc)
