@@ -108,31 +108,72 @@ S_i(f,L) \sim L^{-\beta /\nu} \tilde{S}_i[(f-f_c) L^{1/\nu}].
 For a finite-size system, the percolation threshold does not necesarly coincide with the corresponding value for $N\rightarrow \infty$. In general, the difference between these values presents a scaling in the form
 
 \begin{equation} \label{eq:peak_pos_shift}
-f_c(L) - f_c = b L^{-1/\nu}.
+f_c(L) - f_c = b L^{-\lambda}.
 \end{equation}
+
+In standard percolation, as well as in many other models, $\lambda = 1/\nu$, but this is not always valid \cite{Li2012,Ziff2010ScalingLattice,Grassberger2011ExplosiveBehavior}. In some explosive percolation models, for example, small-sized systems present a differences between the two exponents due to large crossover sizes.
+
+In a recently published article, Fan, et al. proposed a new method to analyze generalized percolation processes, based on the scaling of the largest jump in the order parameter during the process \cite{Fan2020}. Although the authors deal with bond percolation, the same analysis can be performed for site percolation. Based on this work, we define the \emph{gap}
+
+\begin{equation} \label{eq:Delta}
+\Delta = \dfrac{1}{L^d} \max_{t} \left[ N_1(t+1) - N_1(t) \right],
+\end{equation} 
+
+where $N_1(t)$ is the size of the largest cluster after $t$ nodes are removed from the network. According to \cite{Fan2020}, $\Delta\sim L^{-\beta/\nu}$. We also define $t_c$ as the number of nodes removed such that the maximum in \ref{eq:Delta} is attained and the \emph{gap threshold} $r_c(L) = t_c/L^d$. For a finite-size system, $r_c(L)$ may differ from the finite-size percolation threshold $f_c(L)$, but in the thermodynamic limit $f_c = r_c(\infty)$. %Finally, the percolation strength is defined as $N_1(t_c)$. 
+According to \cite{Fan2020}, these quantities, averaged over realizations, scale as 
+
+\begin{align}
+\Delta&\sim L^{-\beta/\nu} \label{eq:fan_Delta}\\
+r_c(L) - r_c(\infty) &\sim L^{-1/\nu_1} \label{eq:fan_rc}
+%N_1(L) &\sim L^{-d_f}. \label{eq:fan_N1}
+\end{align}
+
+Also, the fluctuations for these quantities present a similar scaling 
+
+\begin{align}
+\chi_{\Delta} &\sim L^{-\beta/\nu} \label{eq:fan_chiDelta} \\
+\chi_{r_c} &\sim L^{-1/\nu} \label{eq:fan_chirc}
+%\chi_{N_1} &\sim L^{-d_f}. \label{eq:fan_chiN1}
+\end{align}
+
+Note that, in a similar way as it happens in Equation \ref{eq:peak_pos_shift}, the exponent $\nu_1$ does not coincide in general with the correlation length critical exponent $\nu$.
+
+%In equilibrium thermodynamics, first-order transitions do not present a divergence of the correlation length and thus, do not exhibit critical behaviour. For out-of-equilibrium systems, this is not the general case. Several examples exhist where both a discontinuity of the order parameter and criticallity coexist [ADD REFS]. 
+
+For first-order transitions, the order parameter shows a discontinuous jump at the percolation threshold, which implies $\beta = 0$. Besides, the susceptibility scales with system dimension as $\gamma / \nu = d$ \cite{Binder1981,Binder1984,Cho2009}.
 
 \section{Results}
 
 \subsection{Recalculated-Betweenness attack on DT networks}
 
-In Figure \ref{fig:collapse_RB_DT} we show different observables of the phase transition for different sizes.
+In Figure \ref{fig:collapse_RB_DT} we show different observables of the phase transition for different sizes, averaged over $10^5$ realizations. In (a), the order parameter $S_1$ is shown. In the begining of the attack, the network remains fully connected, but after a given number of nodes are removed, it begins to break down, presenting an elbow-like shape. As the systems become larger, the position of the elbow shifts towards $f = 0$, meaning that a smaller fraction of nodes needs to be removed in order to break the network. This result is coincident with previous study of the transition \cite{Norrenbrock2016FragmentationAttacks}. Figures (b) and (c) show the peak in the susceptibility $\langle s \rangle$ and second largest clsuter $N_2=S_2L^2$. In both cases, the peak also moves towards $f = 0$ as the system size increases. 
 
-
-\begin{figure}
+\begin{figure}[h]
 \centering
 \includegraphics[scale=0.25]{collapse_RB_DT.pdf}
 \caption{\label{fig:collapse_RB_DT} (Upper panels) Relative size of the giant component (left), average finite-component size (center) and size of the second largest component for the DT network as a function of the fraction of nodes removed under the RB attack. (Lower panels) Collapse of the curves.}
 \end{figure}
 
 
-\begin{figure}
+Following the scaling ansatz \ref{eq:comp-scaling} and \ref{eq:suscep-scaling}, we computed the exponent ratios $\beta / \nu$ and $\gamma / \nu$ by fittig the size of the peaks of $S_2$ and $\langle s \rangle$ for different system sizes. The values obtained are consistent with a first-order transition. 
+
+%Figures (d-f) show the collapse of the curves using the scaling ansatz and the computed exponents. 
+
+
+If the percolation threshold is indeed $f_c = 0$, then the finite-size threshold $f_c(L)$ should exhibit a power-law behaviour in accordance with Equation \ref{eq:peak_pos_shift}. To see this, we computed $f_c(L)$ for different sizes and plotted against $L$. We define $f_c(L)$ using two different criteria, namely as the peak position for either $\langle s \rangle$ and $S_2$. In Figure (\ref{fig:exponents}b) we show that this is indeed the case, and also obtain consistent values for the scaling exponent.
+
+
+\begin{figure}[h]
 \centering
 \includegraphics[scale=0.25]{beta_gamma_nu_scaling_RB_DT.pdf}
-\caption{\label{fig:exponents}(Left) Scaling for the peaks of $\langle s \rangle$ and $S_2 L^2$ as a function of the linear size $L$. (Right) Scaling for the shifting of the finite-size percolation threshold, defined as the position of the peak of the corresponding measure.}
+\caption{\label{fig:exponents}(Left) Scaling for the peaks of $\langle s \rangle$ and $S_2 L^2$ as a function of the linear size $L$. The exponents obtained are consistent with $\beta =0$, $\gamma = d\nu$, corresponding to a first-order transition. (Right) Scaling for the shifting of the finite-size percolation threshold, defined as the position of the peak of the corresponding measure. Both shiftings show a similar power-law scaling, with consistent exponents.}
 \end{figure}
 
 
-\begin{figure}
+
+
+
+\begin{figure}[h]
 \centering
 \includegraphics[scale=0.25]{gap_exp_scaling_RB_DT.pdf}
 \caption{\label{fig:gap_exp} Estimation of the critical exponents using the gap scaling proposed by Fan, et al. in \cite{Fan2020}.}
@@ -143,20 +184,50 @@ In Figure \ref{fig:collapse_RB_DT} we show different observables of the phase tr
 
 In this section we compare the RB attack with attacks using $\ell$-betweenness, i.e, computing betweenness using only paths up to length $\ell$. 
 
+In Figure (\ref{fig:RBl_attacks}) we show the performance of attacks based on approximate betweenness for different approximation lengths $\ell$ on a network with $L^2 = 1024$. As expected, longer values of $\ell$ give a better attack, shifting the percolation transition to the left. For sufficiently large $\ell$, the curves become indistinguishable from the RB attack. This indicates that, for each size $L$, a finite approximation length $\ell^*(L)$ exists such that for $\ell \geq \ell^*(L)$ all RB$\ell$ attacks perform as well as RB. In other words, all the relevant information from the system is available for the dismantling process for such approximation length. 
 
-\begin{figure}
+\begin{figure}[h]
 \centering
 \includegraphics[scale=0.25]{order_par_and_susceptibility_RBl_DT.pdf}
 \caption{\label{fig:RBl_attacks} Performance of RB$\ell$ attacks on a DT network of size $L^2=1024$. For this size, $\ell^*=25$.}
 \end{figure}
 
+In Figure (\ref{fig:rc_per_cutoff}a) we show the behaviour of the gap threshold $r_c(L)$ for RB$\ell$ attacks with different values of $\ell$. As it can be seen, the attack improves as $\ell$ increases, until the gap threshold equals the corresponding value for the full RB attack (dashed lines). For any $\ell\geq \ell^*$, $r_c^{(\mathrm{RB}\ell)}(L)$ remains constant. We define $\ell^*(L)$ as the lower $\ell$ such that $|r_c^{(\mathrm{RB}\ell)}(L) - r_c^{(\mathrm{RB})}(L)| < c$, and chose $c = 0.01$ (the definition is robust for different values of the threshold $c$). 
+Figure (\ref{fig:rc_per_cutoff}a) shows the scaling of $\ell^*(L)$ against $L$. It can be seen that $\ell^* \sim L^{\alpha}$, with $\alpha \approx 0.76$. To compare this exponent with network properties, we computed the network average shortest-path length and diameter for different sizes. Both meausures display also a power-law scaling with the system, with exponent $0.79\pm 0.01$ (grey lines in the figure). For all sizes studied, $\ell^*$ is greater that the diameter, and although its scaling exponent is slightly lower than the one corresponding to the diameter, it is hard to say if the two curves will cross for larger systems.  
 
-\begin{figure}
+\begin{figure}[h]
 \centering
 \includegraphics[scale=0.3]{peak_shifting_RBl_rc_DT.pdf}
 \caption{\label{fig:rc_per_cutoff} (Left) Shift of the position of the percolation threshold for the RB attacks with cutoffs. Dashed lines indicate the corresponding valu for the RB attack. (Right) Scaling of the $\ell^*$ with the system linear size. Here, $\ell^*$ is defined as the minimum $\ell$ such that the percolation threshold  for the RB-$\ell^*$ differs from the full RB attack in less than $1\%$. The grey lines correspond to the diameter (solid) and average shortest-path length (dot-dashed) for the DT network prior to the attack, which scale both as $\sim L^{\omega}$, with $\omega = 0.79\pm 0.01$.}
 \end{figure}
 
+
+\subsection{Breaking nodes and fractals}
+
+In Figure \ref{fig:attack_draw} we show the network status after the first $t_c$ nodes are removed (i.e., right after the largest relative jump of the giant cluster takes place). We compare the 2D Lattice (left panels) with the DT (right panels), and different attacks. As the figure shows, the RB attack cuts the lattice by the main diagonal, and breaks the DT in two extensive components. Thus, we call this set of nodes the \emph{breaking nodes}. 
+
+\begin{figure}
+\centering
+\includegraphics[scale=0.3]{Lattice_vs_DT_L128_seed00000.png}
+\caption{\label{fig:attack_draw} Network status at $f_c$ for RB $(N = 128^2)$. After removing the green nodes, the network is splitted in two extensive clusters. The largest cluster correspond to the orange nodes and the second largest cluster to the purple nodes. The rest of the nodes are plotted in grey. For the Lattice, RB traces a diagonal and break the network in two clusters of almost the same size. For DT, the algorithm starts by removing the high-betweennesss nodes located at the periphery and then it finds a high betweenness ``percolating path'' across  the network. Although in the latter case the network is also splitted in two extensive components, there is a significant difference in size between the two largest clusters. }
+\end{figure}
+
+
+To characterize the geometry of the \emph{breaking nodes}, we estimated its fractal dimension using two common methods [CITE: Stanley book]. The first method, known as the box-counting method, consists in covering the space by non-overlapping boxes of linear size $\delta \leq L$ and count the number $N_B$  of such boxes containing at least one node belonging to the set. The procedure is repeated for different values of $\delta$. Fractal objects are expected to follow a relation $N_B(\delta) \sim \delta^{-d_B}$, where $d_B$, known as the box-counting dimension, is its characteristic length. For the second method, we select a random element of the set and consider a square window of linear size $l$ centered at the element. We count the number of elements of the set in the window and repeat the procedure for different values of $l$. We then average these values taking several seeds. For each value of $l$, the mass $M(l)$ is computed as the average over seed elements of the number of nodes in the window, and is expected to follow the scaling $M(l)\sim l^{d_f}$, where $d_f$ is the fractal dimension of the set. In Figure \ref{fig:Delta_Lattice} we show both estimations for the DT network and for the 2D Lattice. Coincident with Figure \ref{fig:attack_draw}, the fractal dimension for the set of removed nodes from the Lattice is equal to one, as the nodes are roughly arranged over a straight line. For the case of DT, a non-trivial scaling is seen, with a fractal dimension greater than one. Note that the values obtained using both methods are consistent ($d_B = 1.45\pm 0.16$ and $d_f = 1.43\pm 0.06$).
+
+There is a third way of estimating the fractal dimension of the set, which consists in using Equation \ref{eq:fan_rc}. According to this equation, the mass of the set scales as $M\sim N^{1-1/\nu_1} = L^{d_{f_2}}$, where $d_{f_2} := 2(1-1/\nu_1)$. Taking the value estimated for $\nu_1$, one obtains $d_{f_2} = 1.44$.
+
+The breaking nodes for the case of RB on the Lattice consist mainly in one of the main diagonals. Thus, if we take the spanning subgraph with vertex set equal to the breaking nodes, we have mainly isolated nodes. In contrast, when applying the same attack to the DT, the spanning subgraph corresponding to the breaking nodes has a large connected component. We call this component the \emph{backbone} of the breaking nodes. In Figure \ref{fig:fractal_dimension}, we measure the fractal dimension of this set. We can see that, in this case, the fractal dimension of the set is close to one, indicating that the backbone is not fractal, but a conventional curve. 
+
+As it can be infered from Figure \ref{fig:attack_draw}, the backbone itself is sufficient to break the network. We corroborated this proposition by measuring the relative size of the largest cluster after removing only the backbone nodes. As Figure \ref{fig:Sgcc_backbone} shows, $S_1$ has a comparable size after removing the backbone with the result of removing all the breaking nodes. 
+In terms of attack performance, we can say that, although the RB attack is very efficient in breaking the network (the percolation threshold is $r_c = 0$ in the thermodynamic limit), is not optimal, as the number of nodes that the attack removes scales more that linearly. But, if instead of removing the breaking nodes, they are only algorithmically identified, one can chose to remove only the backbone, disconnecting the network with an efficiency now close to optimal.
+
+\begin{figure}
+\centering
+\includegraphics[scale=0.3]{df_L128_BtwU.pdf}
+\includegraphics[scale=0.3]{df_L256_BtwU_conn.pdf}
+\caption{\label{fig:fractal_dimension} (Upper panels) Fractal dimension of the breaking nodes for networks of size $N=128^2$. Left: Box-counting dimension; Right: estimation based on random seed sampling. (Blue) DT; (Orange) 2D Lattice. (Lower panels) Fractal dimension of the backbone for a network of type DT of size $N=256^2$. Left: Box-counting dimension; Right: estimation based on random seed sampling.}
+\end{figure}
 
 
 \bibliographystyle{unsrt}
