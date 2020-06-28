@@ -61,6 +61,9 @@ for attack in attacks:
             aux = read_data_file(attack_dir_name, 'comp_data', reader='numpy')
         except FileNotFoundError:
             continue
+        except ValueError:
+            print(seed)
+            raise
 
         if verbose:
             print(seed)
