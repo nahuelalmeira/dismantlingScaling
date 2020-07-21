@@ -89,6 +89,7 @@ print('net_type =', net_type)
 print('param    =', param)
 print('min_seed =', min_seed)
 print('max_seed =', max_seed)
+print('Properties:', properties)
 print('----------------------', end='\n\n')
 
 dir_name = os.path.join('../networks', net_type)
@@ -97,15 +98,15 @@ base_net_dir = os.path.join(dir_name, base_net_name, base_net_name_size)
 
 for attack in attacks:
     print(attack)
-    attack_dir = os.path.join(net_dir, attack)
     prop_dfs = {}
     for seed in range(min_seed, max_seed):
         net_name = base_net_name_size + '_{:05d}'.format(seed)
         net_dir = os.path.join(base_net_dir, net_name)
-        print(net_name, end='\t')
+        attack_dir = os.path.join(net_dir, attack)
+        print(net_name)
 
         g = read_data_file(net_dir, net_name, reader='igraph')
-        oi_values = read_data_file(net_dir, 'oi_list', reader='numpyInt')
+        oi_values = read_data_file(attack_dir, 'oi_list', reader='numpyInt')
 
         if oi_values.size < N:
             print('ERROR in seed ', seed, ': File too short. Num lines', num_lines)
@@ -114,7 +115,7 @@ for attack in attacks:
         if 'meanlw' in properties:
             g.es['weight'] = get_edge_weights(g, net_type, size, param, seed)
 
-        if not overwrite:
+        if not overwrite: ## Check if property was already computed
             remove_props = []
             for prop in properties:
                 prop_output_file = get_property_file_name(prop, attack_dir)
@@ -128,7 +129,6 @@ for attack in attacks:
                 properties.remove(prop)
 
         ## Compute properties
-        print(properties)
         prop_values = compute_properties(g, oi_values, properties)
 
         ## Write properties in files

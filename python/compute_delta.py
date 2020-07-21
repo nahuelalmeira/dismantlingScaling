@@ -69,7 +69,6 @@ for attack in attacks:
             print(seed)
 
         len_aux = aux.shape[0]
-        len_aux = aux.shape[0]
         if len_aux > N:
             print('ERROR: Seed {}. Len of array is greater than network size'.format(seed))
             continue

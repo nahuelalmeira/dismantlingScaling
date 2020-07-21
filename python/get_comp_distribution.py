@@ -64,7 +64,8 @@ for seed in seeds:
         continue
 
     net_name = base_net_name_size + '_{:05d}'.format(seed)
-    print(net_name)
+    if verbose:
+        print(net_name)
     net_dir = os.path.join(base_net_dir, net_name)
     attack_dir = os.path.join(net_dir, attack)
 

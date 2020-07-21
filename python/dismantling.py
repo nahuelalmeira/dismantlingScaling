@@ -80,9 +80,11 @@ def updated_attack_ig(graph, attack, out=None, random_state=0):
     if out:
         if os.path.isfile(out) and os.path.getsize(out) > 0:
             oi_values = np.loadtxt(out, dtype='int', comments='\x00')
+            if oi_values.size == 1:
+                oi_values = np.array([oi_values], dtype='int')
             g.delete_vertices(oi_values)
-            oi_values = np.array(oi_values) ## In case oi_values is one single integer
-            j += len(oi_values)
+            #j += len(oi_values)
+            j += oi_values.size
             np.savetxt(out, oi_values, fmt='%d')
 
         f = open(out, 'a+')
@@ -150,6 +152,8 @@ def updated_attack_nk(g, attack, out=None, random_state=0):
     if out:
         if os.path.isfile(out) and os.path.getsize(out) > 0:
             oi_values = np.loadtxt(out, dtype='int', comments='\x00')
+            if oi_values.size == 1:
+                oi_values = np.array([oi_values], dtype='int')
             for oi in oi_values:
                 g.removeNode(oi)
                 order.append(oi)
@@ -340,9 +344,11 @@ def updated_hybrid_attack(graph, attacks, probabilities, out=None, random_state=
     if out:
         if os.path.isfile(out) and os.path.getsize(out) > 0:
             oi_values = np.loadtxt(out, dtype='int', comments='\x00')
+            if oi_values.size == 1:
+                oi_values = np.array([oi_values], dtype='int')
             g.delete_vertices(oi_values)
-            oi_values = np.array(oi_values) ## In case oi_values is one single integer
-            j += len(oi_values)
+            #j += len(oi_values)
+            j += oi_values.size
             np.savetxt(out, oi_values, fmt='%d')
 
         f = open(out, 'a+')
