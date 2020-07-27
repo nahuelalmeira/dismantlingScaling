@@ -7,7 +7,12 @@ import queue
 sys.path.append(os.path.join(os.path.dirname(__file__), 'fast'))
 from functions import RD_attack, RCI_attack, graph_to_nn_set
 
-def initial_attack(g, attack, out=None, random_state=0):
+def initial_attack(
+    g, attack, out=None,
+    save_centrality=False,
+    out_centrality=None,
+    random_state=0
+):
 
     if out and os.path.isfile(out):
         original_indices = np.loadtxt(out, dtype='int')
@@ -35,6 +40,9 @@ def initial_attack(g, attack, out=None, random_state=0):
 
     if out:
         np.savetxt(out, original_indices, fmt='%d')
+
+    if save_centrality:
+        np.savetxt(out_centrality, c_values)
 
     return original_indices
 
@@ -388,7 +396,12 @@ def updated_hybrid_attack(graph, attacks, probabilities, out=None, random_state=
     return original_indices
 
 
-def get_index_list(G, attack, out=None, random_state=0):
+def get_index_list(
+    G, attack, out=None,
+    save_centrality=False,
+    out_centrality=None,
+    random_state=0
+):
     """
     Write to output out index list in order of removal
     """
@@ -417,7 +430,11 @@ def get_index_list(G, attack, out=None, random_state=0):
     }
 
     if attack in supported_attacks['initial']:
-        index_list = initial_attack(G, attack, out=out, random_state=random_state)
+        index_list = initial_attack(
+            G, attack, out=out, save_centrality=save_centrality,
+            out_centrality=out_centrality,
+            random_state=random_state
+        )
     elif attack in supported_attacks['updated']:
         index_list = updated_attack(G, attack, out=out, random_state=random_state)
     elif attack in supported_attacks['updated_local']:

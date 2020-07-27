@@ -231,7 +231,9 @@ def compute_crossings(dfs, min_f, max_f, method='beta', only_next=False, verbose
     return inter_values
 
 
-def get_rc_values(sizes, l_values=None, net_type='DT', param='param', nseeds=None, min_nseeds=None):
+def get_rc_values(
+    sizes, l_values=None, net_type='DT', param='param', nseeds=None, min_nseeds=None,
+    verbose=False):
 
     if l_values is None:
         l_values = np.arange(2, 100)
@@ -256,7 +258,8 @@ def get_rc_values(sizes, l_values=None, net_type='DT', param='param', nseeds=Non
                 rc_values[size].append(np.NaN)
                 rc_values_std[size].append(np.NaN)
             except IndexError:
-                print(attack)
+                if verbose:
+                    print(attack)
                 rc_values[size].append(np.NaN)
                 rc_values_std[size].append(np.NaN)
         rc_values[size] = np.array(rc_values[size])

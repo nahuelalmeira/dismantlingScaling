@@ -22,6 +22,10 @@ package = 'igraph'
 if 'networkit' in sys.argv:
     package = 'networkit'
 
+save_centrality = False
+if 'saveCentrality' in sys.argv:
+    save_centrality = True
+
 python_file_dir_name = os.path.dirname(__file__)
 dir_name = os.path.join(python_file_dir_name, '../networks', net_type)
 seeds = range(min_seed, max_seed)
@@ -48,6 +52,10 @@ for attack in attacks:
         output_name = 'oi_list.txt'
         full_output_name = os.path.join(output_dir, output_name)
 
+        if save_centrality:
+            c_output_name = 'initial_centrality.txt'
+            full_c_output_name = os.path.join(output_dir, c_output_name)
+
         if os.path.isfile(full_output_name) and overwrite:
             os.remove(full_output_name)
 
@@ -57,4 +65,9 @@ for attack in attacks:
             g.es['weight'] = get_edge_weights(g, net_type, size, param, seed)
 
         ## Perform the attack
-        get_index_list(g, attack, full_output_name, random_state=seed)
+        get_index_list(
+            g, attack, full_output_name,
+            save_centrality=save_centrality,
+            out_centrality=full_c_output_name,
+            random_state=seed
+        )
