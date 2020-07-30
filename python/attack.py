@@ -52,6 +52,7 @@ for attack in attacks:
         output_name = 'oi_list.txt'
         full_output_name = os.path.join(output_dir, output_name)
 
+        full_c_output_name = None
         if save_centrality:
             c_output_name = 'initial_centrality.txt'
             full_c_output_name = os.path.join(output_dir, c_output_name)

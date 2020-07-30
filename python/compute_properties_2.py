@@ -6,33 +6,7 @@ import numpy as np
 import igraph as ig
 
 from auxiliary import get_base_network_name, supported_attacks, get_property_file_name, simple_props
-from auxiliary import get_edge_weights, get_number_of_nodes, read_data_file
-
-def get_prop(g, prop):
-
-    if prop == 'C':
-        return g.transitivity_undirected(mode='zero')
-
-    if prop == 'Cws':
-        return g.transitivity_avglocal_undirected(mode='zero')
-
-    if prop == 'r':
-        return g.assortativity_degree(directed=False)
-
-    if prop == 'D':
-        return g.diameter(directed=False)
-
-    if prop == 'meanl':
-        return g.average_path_length(directed=False)
-
-    if prop == 'meanlw':
-        return np.mean(g.shortest_paths(weights='weight', mode=ig.ALL))
-
-    if prop == 'meank':
-        return np.mean(g.degree())
-
-    if prop == 'maxk':
-        return max(g.degree())
+from auxiliary import get_edge_weights, get_number_of_nodes, read_data_file, get_prop, save_pickle_data
 
 def compute_props_step(g, properties, data_dict, step):
 
@@ -41,11 +15,11 @@ def compute_props_step(g, properties, data_dict, step):
             continue
         else:
             value = get_prop(g, prop)
-            data_dict[prop][i] = value
+            data_dict[prop][step] = value
 
     return
 
-def load_data_json(properties_file):
+def load_json_data(properties_file, overwrite):
     if os.path.isfile(properties_file) and not overwrite:
         with open(properties_file, 'r') as f:
             data_dict = json.load(f)
@@ -54,7 +28,7 @@ def load_data_json(properties_file):
 
     return data_dict
 
-def load_data(properties_file):
+def load_pickle_data(properties_file, overwrite):
     if os.path.isfile(properties_file) and not overwrite:
         with open(properties_file, 'rb') as f:
             data_dict = pickle.load(f)
@@ -64,17 +38,11 @@ def load_data(properties_file):
     return data_dict
 
 
-def save_properties_json(data_dict, properties_file):
-    #if verbose:
-    #    print('Saving data to file:', properties_file)
-    with open(properties_file, 'w') as f:
-        json.dump(data_dict, f, sort_keys=True, indent=4)
+def load_data(file_name, overwrite):
+    return load_pickle_data(file_name, overwrite)
 
-def save_properties(data_dict, properties_file):
-    #if verbose:
-    #    print('Saving data to file:', properties_file)
-    with open(properties_file, 'wb') as f:
-        pickle.dump(data_dict, f)
+def save_properties(data, file_name):
+    save_pickle_data(data, file_name)
 
 
 net_type = sys.argv[1]
@@ -139,7 +107,7 @@ for attack in attacks:
             print(net_name)
 
         properties_file = os.path.join(attack_dir, 'properties.pickle')
-        data_dict = load_data(properties_file)
+        data_dict = load_data(properties_file, overwrite)
 
         for prop in properties:
             if prop not in data_dict:

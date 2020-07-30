@@ -2,6 +2,8 @@ import os
 import sys
 import errno
 import tarfile
+import pickle
+import json
 import igraph as ig
 import numpy as np
 from planar import spatial_net_types, distance
@@ -219,6 +221,41 @@ def load_delta_data(net_type, size, param, attack, seed):
 
     return g, max_pos, delta_max
 
+
+def get_prop(g, prop):
+
+    if prop == 'C':
+        return g.transitivity_undirected(mode='zero')
+
+    if prop == 'Cws':
+        return g.transitivity_avglocal_undirected(mode='zero')
+
+    if prop == 'r':
+        return g.assortativity_degree(directed=False)
+
+    if prop == 'D':
+        return g.diameter(directed=False)
+
+    if prop == 'meanl':
+        return g.average_path_length(directed=False)
+
+    if prop == 'meanlw':
+        return np.mean(g.shortest_paths(weights='weight', mode=ig.ALL))
+
+    if prop == 'meank':
+        return np.mean(g.degree())
+
+    if prop == 'maxk':
+        return max(g.degree())
+
+
+def save_json_data(data, file_name):
+    with open(file_name, 'w') as f:
+        json.dump(data, f, sort_keys=True, indent=4)
+
+def save_pickle_data(data, file_name):
+    with open(file_name, 'wb') as f:
+        pickle.dump(data, f)
 
 ####################################################
 ###                                              ###
