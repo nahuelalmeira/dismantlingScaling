@@ -1,6 +1,5 @@
 import os
 import sys
-import tarfile
 import igraph as ig
 import numpy as np
 import pandas as pd
