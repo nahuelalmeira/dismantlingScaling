@@ -60,6 +60,7 @@ supported_attacks = [
     'Ran', 'Deg', 'DegU', 'CIU', 'CIU2', 'Eigenvector', 'Btw',
     'BtwU1nn', 'EigenvectorU', 'BtwU', 'BtwWU'
 ]
+supported_attacks += ['Btw_cutoff{}'.format(l) for l in range(2, 1000)]
 supported_attacks += ['BtwU_cutoff{}'.format(l) for l in range(2, 1000)]
 supported_attacks += ['BtwWU_cutoff{}'.format(l) for l in range(2, 1000)]
 

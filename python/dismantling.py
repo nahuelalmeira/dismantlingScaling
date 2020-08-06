@@ -30,6 +30,9 @@ def initial_attack(
         ## Compute centrality
         if attack == 'Btw':
             c_values = g.betweenness(directed=False, nobigint=False)
+        elif 'Btw_cutoff' in attack:
+            cutoff = int(attack.split('cutoff')[1])
+            c_values = g.betweenness(directed=False, nobigint=False, cutoff=cutoff)
         elif attack == 'Deg':
             c_values = g.degree()
         elif attack == 'Eigenvector':
@@ -419,7 +422,8 @@ def get_index_list(
     #    return 1
 
     supported_attacks = {
-        'initial': ['Ran', 'Deg', 'Btw', 'Eigenvector'],
+        'initial': ['Ran', 'Deg', 'Btw', 'Eigenvector']+ \
+                   ['Btw_cutoff{}'.format(i) for i in range(2, 1000)],
         'updated': ['BtwU', 'EigenvectorU', 'BtwWU'] + \
                    ['BtwU_cutoff{}'.format(i) for i in range(2, 1000)] + \
                    ['BtwWU_cutoff{}'.format(i) for i in range(2, 1000)],
