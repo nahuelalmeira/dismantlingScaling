@@ -14,9 +14,9 @@ attack_dict = {
     'CI': r'$\mathrm{ICI}$', 'CIU': r'$\mathrm{RCI}$', 'CIU2': r'$\mathrm{RCI2}$',
 }
 
-
 for i in range(2, 100):
     attack_dict['BtwU_cutoff{}'.format(i)] = r'$\mathrm{RB}$' + r'${{{}}}$'.format(i)
+    attack_dict['Btw_cutoff{}'.format(i)] = r'$\mathrm{B}$' + r'${{{}}}$'.format(i)
 
 measures_dict = {
     'Nsec': r'$N_2$',
@@ -36,7 +36,7 @@ attack_colors = {
 }
 
 
-def load_delta(net_type, size, param, attack, nseeds=None, min_nseeds=None):
+def load_delta(net_type, size, param, attack, nseeds=None, min_nseeds=None, return_nseeds=None):
     dir_name = os.path.join('../networks', net_type)
     base_net_name, base_net_name_size = get_base_network_name(net_type, size, param)
     net_dir_name = os.path.join(dir_name, base_net_name,
@@ -46,22 +46,31 @@ def load_delta(net_type, size, param, attack, nseeds=None, min_nseeds=None):
         delta_file_name = os.path.join(net_dir_name,
             'Delta_values_' + attack + '_nSeeds{:d}.txt'.format(nseeds)
         )
+        if not os.path.isfile(delta_file_name):
+            raise FileNotFoundError('File does not exist')
     else:
         files = [file for file in os.listdir(net_dir_name) if 'Delta' in file]
         files = [file for file in files if attack + '_nSeeds' in file]
 
         if not files:
-            raise FileNotFoundError('No file exist')
+            raise FileNotFoundError('File does not exist')
+
         nseeds_values = [int(file.split('nSeeds')[1].split('.')[0]) for file in files]
 
         if min_nseeds:
             if np.max(nseeds_values) < min_nseeds:
                 raise FileNotFoundError('No file exist with seeds enough')
 
-        idx = np.argmax([int(file.split('nSeeds')[1].split('.')[0]) for file in files])
+        nseeds = np.max(nseeds_values)
+        idx = np.argmax(nseeds_values)
         file_name = files[idx]
         delta_file_name = os.path.join(net_dir_name, file_name)
+
     delta_values = np.loadtxt(delta_file_name)
+
+    if return_nseeds:
+        return delta_values, nseeds
+
     return delta_values
 
 def average_delta(net_type, param, attack, N_values, nseeds=None, min_nseeds=None):
@@ -79,7 +88,7 @@ def average_delta(net_type, param, attack, N_values, nseeds=None, min_nseeds=Non
         std_delta_values.append(std_delta)
     return mean_pos_values, std_pos_values, mean_delta_values, std_delta_values
 
-def load_dataframe(net_type, size, param, attack, nseeds=None, min_nseeds=None):
+def load_dataframe(net_type, size, param, attack, nseeds=None, min_nseeds=None, return_nseeds=None):
     dir_name = os.path.join('../networks', net_type)
     base_net_name, base_net_name_size = get_base_network_name(net_type, size, param)
     net_dir_name = os.path.join(dir_name, base_net_name,
@@ -100,11 +109,16 @@ def load_dataframe(net_type, size, param, attack, nseeds=None, min_nseeds=None):
                 #print(np.max(nseeds_values), min_nseeds)
                 raise FileNotFoundError
 
+        nseeds = np.max(nseeds_values)
         idx = np.argmax(nseeds_values)
         file_name = files[idx]
         full_file_name = os.path.join(net_dir_name, file_name)
 
     df = pd.read_csv(full_file_name, index_col=0)
+
+    if return_nseeds:
+        return df, nseeds
+
     return df
 
 
@@ -233,12 +247,12 @@ def compute_crossings(dfs, min_f, max_f, method='beta', only_next=False, verbose
 
 def get_rc_values(
     sizes, l_values=None, net_type='DT', param='param', nseeds=None, min_nseeds=None,
-    verbose=False):
+    verbose=False, base_attack='BtwU'):
 
     if l_values is None:
         l_values = np.arange(2, 100)
 
-    attacks = ['BtwU'] + ['BtwU_cutoff{}'.format(l) for l in l_values]
+    attacks = [base_attack] + [base_attack + '_cutoff{}'.format(l) for l in l_values]
     rc_values = {}
     rc_values_std = {}
     for size in sizes:
@@ -267,10 +281,10 @@ def get_rc_values(
 
     return rc_values, rc_values_std
 
-def get_l_cutoff(sizes, threshold=0.01, rc_values=None, net_type='DT', param='param'):
+def get_l_cutoff(sizes, threshold=0.01, rc_values=None, net_type='DT', param='param', base_attack='BtwU'):
 
     if not rc_values:
-        rc_values, _ = get_rc_values(sizes, net_type=net_type, param=param)
+        rc_values, _ = get_rc_values(sizes, net_type=net_type, param=param, base_attack=base_attack)
 
     l_cutoff = {}
     for size in sizes:

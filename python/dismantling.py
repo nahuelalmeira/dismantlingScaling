@@ -422,7 +422,7 @@ def get_index_list(
     #    return 1
 
     supported_attacks = {
-        'initial': ['Ran', 'Deg', 'Btw', 'Eigenvector']+ \
+        'initial': ['Ran', 'Deg', 'Btw', 'Eigenvector'] + \
                    ['Btw_cutoff{}'.format(i) for i in range(2, 1000)],
         'updated': ['BtwU', 'EigenvectorU', 'BtwWU'] + \
                    ['BtwU_cutoff{}'.format(i) for i in range(2, 1000)] + \
