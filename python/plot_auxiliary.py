@@ -298,3 +298,33 @@ def get_l_cutoff(sizes, threshold=0.01, rc_values=None, net_type='DT', param='pa
                     l_cutoff[size] = l
                     break
     return l_cutoff
+
+def get_histo(comp_sizes, nbins=None, log=True, density=False):
+
+    if nbins is None:
+        nbins = 20
+
+    mask = comp_sizes > 0
+    comp_sizes = comp_sizes[mask]
+    min_s = np.min(comp_sizes)
+    max_s = np.max(comp_sizes)
+    if log:
+        bins = np.logspace(np.log10(min_s), np.log10(max_s), nbins)
+    else:
+        bins = np.linspace(min_s, max_s+1, nbins)
+    freq, bin_edges = np.histogram(comp_sizes, bins=bins, density=density)
+    freq = freq.astype('float')
+
+    if density == False:
+        freq_norm = freq / np.diff(bin_edges)
+    else:
+        freq_norm = freq
+
+    freq_norm[freq_norm==0] = np.NaN
+    mask = ~np.isnan(freq_norm)
+
+    X = bins[:-1]
+    X = X[mask]
+    Y = freq_norm[mask]
+
+    return X, Y
