@@ -14,10 +14,19 @@ verbose = False
 if 'verbose' in sys.argv:
     verbose = True
 
-dir_name = os.path.join('../networks', net_type)
+python_file_dir_name = os.path.dirname(__file__)
+dir_name = os.path.join(python_file_dir_name, '../networks', net_type)
 seeds = range(min_seed, max_seed)
 
-base_net_name, base_net_name_size = get_base_network_name(net_type, size, param)
+if net_type == 'MR':
+    if 'meank' in sys.argv:
+        base_net_name, base_net_name_size = get_base_network_name(net_type, size, param, meank=True)
+    elif 'rMST' in sys.argv:
+        base_net_name, base_net_name_size = get_base_network_name(net_type, size, param, rMST=True)
+    else:
+        base_net_name, base_net_name_size = get_base_network_name(net_type, size, param)
+else:    
+    base_net_name, base_net_name_size = get_base_network_name(net_type, size, param)
 base_net_dir = os.path.join(dir_name, base_net_name, base_net_name_size)
 
 good_seeds = 0

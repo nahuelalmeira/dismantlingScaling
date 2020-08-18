@@ -35,7 +35,15 @@ for attack in supported_attacks:
     if attack in sys.argv:
         attacks.append(attack)
 
-base_net_name, base_net_name_size = get_base_network_name(net_type, size, param)
+if net_type == 'MR':
+    if 'meank' in sys.argv:
+        base_net_name, base_net_name_size = get_base_network_name(net_type, size, param, meank=True)
+    elif 'rMST' in sys.argv:
+        base_net_name, base_net_name_size = get_base_network_name(net_type, size, param, rMST=True)
+    else:
+        base_net_name, base_net_name_size = get_base_network_name(net_type, size, param)
+else:    
+    base_net_name, base_net_name_size = get_base_network_name(net_type, size, param)
 base_net_dir = os.path.join(dir_name, base_net_name, base_net_name_size)
 
 for attack in attacks:

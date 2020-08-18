@@ -312,3 +312,30 @@ def create_proximity_graph(model, N=None, points=None, r=None, distances=None,
     G.vs['position'] = points.tolist()
 
     return G
+
+########################################
+### MR prefactors per mean degree ######
+########################################
+
+
+prefactors = {
+    6.00: {
+        1024: 1.0203,
+        2048: 1.0135,
+        4096: 1.009,
+        8192: 1.0068,
+        16384: 1.0035
+    }
+}
+
+def get_r_from_meank(meank, N, correct=True):
+    """
+    Return the value for minimum radius. If correct is True, then
+    it corrects the value (for small sizes)
+    """
+    
+    r = np.sqrt((1/np.pi)*((meank)/(N)))
+
+    if correct:
+        r *= prefactors[meank][N]
+    return r

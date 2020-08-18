@@ -1,6 +1,7 @@
 import os
 import sys
 import numpy as np
+from auxiliary import get_base_network_name
 from planar import create_proximity_graph
 
 net_type = sys.argv[1]
@@ -16,9 +17,22 @@ verbose = False
 if 'verbose' in sys.argv:
     verbose = True
 
+python_file_dir_name = os.path.dirname(__file__)
+dir_name = os.path.join(python_file_dir_name, '../networks', net_type)
 
-net_dir = os.path.join('..', 'networks', net_type)
-output_file = os.path.join(net_dir, 'meanl_N{}.txt'.format(size))
+if net_type == 'MR':
+    if 'meank' in sys.argv:
+        base_net_name, base_net_name_size = get_base_network_name(net_type, size, param, meank=True)
+    elif 'rMST' in sys.argv:
+        base_net_name, base_net_name_size = get_base_network_name(net_type, size, param, rMST=True)
+    else:
+        base_net_name, base_net_name_size = get_base_network_name(net_type, size, param)
+else:    
+    base_net_name, base_net_name_size = get_base_network_name(net_type, size, param)
+base_net_dir = os.path.join(dir_name, base_net_name, base_net_name_size)
+
+output_file = os.path.join(base_net_dir, 'meanl_N{}.txt'.format(size))
+
 
 if os.path.isfile(output_file) and not overwrite:
     meanls = np.loadtxt(output_file)

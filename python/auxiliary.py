@@ -15,7 +15,7 @@ def get_property_file_name(prop, directory):
         file_name = os.path.join(directory, prop + '_values.txt')
     return file_name
 
-def get_base_network_name(net_type, size, param):
+def get_base_network_name(net_type, size, param, **kwargs):
     N = int(size)
 
     if net_type == 'ER':
@@ -37,7 +37,14 @@ def get_base_network_name(net_type, size, param):
         L = int(size)
         base_net_name = 'Ld3_param'
     elif net_type == 'MR':
-        base_net_name = 'MR_rMST'
+        if 'rMST' in kwargs and kwargs['rMST']:
+            base_net_name = 'MR_rMST'
+        elif 'meank' in kwargs and kwargs['meank']:
+            k = float(param)
+            base_net_name = 'MR_k{:.2f}'.format(k)
+        else:
+            r = float(param)
+            base_net_name = 'MR_r{:.6f}'.format(r)
     elif net_type == 'DT':
         base_net_name = 'DT_param'
     elif net_type == 'PDT':

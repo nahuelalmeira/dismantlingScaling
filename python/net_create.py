@@ -7,7 +7,7 @@ import igraph as ig
 
 from auxiliary import get_base_network_name
 
-from planar import create_proximity_graph
+from planar import create_proximity_graph, get_r_from_meank
 
 net_type = sys.argv[1]
 size = int(sys.argv[2])
@@ -25,8 +25,16 @@ if 'overwrite' in sys.argv:
 
 seeds = range(min_seed, max_seed)
 dir_name = os.path.join('../networks', net_type)
-base_net_name, base_net_name_size = get_base_network_name(net_type, size, param)
 
+if net_type == 'MR':
+    if 'meank' in sys.argv:
+        base_net_name, base_net_name_size = get_base_network_name(net_type, size, param, meank=True)
+    elif 'rMST' in sys.argv:
+        base_net_name, base_net_name_size = get_base_network_name(net_type, size, param, rMST=True)
+    else:
+        base_net_name, base_net_name_size = get_base_network_name(net_type, size, param)
+else:    
+    base_net_name, base_net_name_size = get_base_network_name(net_type, size, param)
 
 for seed in seeds:
 
@@ -74,6 +82,10 @@ for seed in seeds:
         N = int(size)
         if param == 'rMST':
             G = create_proximity_graph(net_type, N=N, random_seed=seed)
+        elif 'meank' in sys.argv:
+            meank = float(param)
+            r = get_r_from_meank(meank, N)
+            G = create_proximity_graph(net_type, N=N, r=r, random_seed=seed)
         else:
             r = float(param)
             G = create_proximity_graph(net_type, N=N, r=r, random_seed=seed)
