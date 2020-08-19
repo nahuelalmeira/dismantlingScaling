@@ -320,11 +320,13 @@ def create_proximity_graph(model, N=None, points=None, r=None, distances=None,
 
 prefactors = {
     6.00: {
+        512: 1.0285,
         1024: 1.0203,
         2048: 1.0135,
         4096: 1.009,
         8192: 1.0068,
-        16384: 1.0035
+        16384: 1.0035,
+        32768: 1.0026
     }
 }
 

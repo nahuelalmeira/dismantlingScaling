@@ -36,9 +36,17 @@ attack_colors = {
 }
 
 
-def load_delta(net_type, size, param, attack, nseeds=None, min_nseeds=None, return_nseeds=None):
+def load_delta(net_type, size, param, attack, nseeds=None, min_nseeds=None, return_nseeds=None, **kwargs):
     dir_name = os.path.join('../networks', net_type)
-    base_net_name, base_net_name_size = get_base_network_name(net_type, size, param)
+    if net_type == 'MR':
+        if 'meank' in kwargs and kwargs['meank']:
+            base_net_name, base_net_name_size = get_base_network_name(net_type, size, param, meank=True)
+        elif 'rMST' in kwargs and kwargs['rMST']:
+            base_net_name, base_net_name_size = get_base_network_name(net_type, size, param, rMST=True)
+        else:
+            base_net_name, base_net_name_size = get_base_network_name(net_type, size, param)
+    else:    
+        base_net_name, base_net_name_size = get_base_network_name(net_type, size, param)
     net_dir_name = os.path.join(dir_name, base_net_name,
             base_net_name_size
     )
@@ -88,9 +96,17 @@ def average_delta(net_type, param, attack, N_values, nseeds=None, min_nseeds=Non
         std_delta_values.append(std_delta)
     return mean_pos_values, std_pos_values, mean_delta_values, std_delta_values
 
-def load_dataframe(net_type, size, param, attack, nseeds=None, min_nseeds=None, return_nseeds=None):
+def load_dataframe(net_type, size, param, attack, nseeds=None, min_nseeds=None, return_nseeds=None, **kwargs):
     dir_name = os.path.join('../networks', net_type)
-    base_net_name, base_net_name_size = get_base_network_name(net_type, size, param)
+    if net_type == 'MR':
+        if 'meank' in kwargs and kwargs['meank']:
+            base_net_name, base_net_name_size = get_base_network_name(net_type, size, param, meank=True)
+        elif 'rMST' in kwargs and kwargs['rMST']:
+            base_net_name, base_net_name_size = get_base_network_name(net_type, size, param, rMST=True)
+        else:
+            base_net_name, base_net_name_size = get_base_network_name(net_type, size, param)
+    else:    
+        base_net_name, base_net_name_size = get_base_network_name(net_type, size, param)
     net_dir_name = os.path.join(dir_name, base_net_name,
             base_net_name_size
     )
