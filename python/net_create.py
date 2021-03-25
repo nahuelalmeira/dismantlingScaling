@@ -2,6 +2,8 @@ import os
 import sys
 import pathlib
 import tarfile
+import argparse
+import logging
 import numpy as np
 import igraph as ig
 
@@ -9,37 +11,71 @@ from auxiliary import get_base_network_name
 
 from planar import create_proximity_graph, get_r_from_meank
 
-net_type = sys.argv[1]
-size = int(sys.argv[2])
-param = sys.argv[3]
-min_seed = int(sys.argv[4])
-max_seed = int(sys.argv[5])
+def parse_args():
+    parser = argparse.ArgumentParser(
+        allow_abbrev=False,
+        description='Perform centrality-based attack on a given network'
+    )
+    parser.add_argument(
+        'net_type', type=str, help='Network type'
+    )
+    parser.add_argument(
+        'size', type=int, help='the path to list'
+    )
+    parser.add_argument(
+        'param', type=str,
+        help='Parameter characterizing the network (e.g., its mean degree)'
+    )
+    parser.add_argument(
+        'min_seed', type=int, help='Minimum random seed'
+    )
+    parser.add_argument(
+        'max_seed', type=int, help='Maximum random seed'
+    )
+    parser.add_argument(
+        '--overwrite', action='store_true', help='Overwrite procedure'
+    )
+    parser.add_argument(
+        '--no-compress', action='store_true', help='Do not compress file'
+    )
+    parser.add_argument(
+        '--log', type=str, default='warning',
+        choices=['debug', 'info', 'warning', 'error', 'exception', 'critical']
+    )
+    return parser.parse_args()
 
-compress = True
-if 'compress_false' in sys.argv:
-    compress = False
+args = parse_args() 
 
-overwrite = False
-if 'overwrite' in sys.argv:
-    overwrite = True
+net_type        = args.net_type
+size            = args.size
+param           = args.param
+min_seed        = args.min_seed
+max_seed        = args.max_seed
+overwrite       = args.overwrite
+logging_level   = args.log.upper()
+compress        = not args.no_compress
+
+logging.basicConfig(
+    format='%(levelname)s: %(asctime)s %(message)s', 
+    datefmt='%m/%d/%Y %I:%M:%S %p',
+    level=getattr(logging, logging_level)
+)
 
 seeds = range(min_seed, max_seed)
-dir_name = os.path.join('../networks', net_type)
 
-if net_type == 'MR':
-    if 'meank' in sys.argv:
-        base_net_name, base_net_name_size = get_base_network_name(net_type, size, param, meank=True)
-    elif 'rMST' in sys.argv:
-        base_net_name, base_net_name_size = get_base_network_name(net_type, size, param, rMST=True)
-    else:
-        base_net_name, base_net_name_size = get_base_network_name(net_type, size, param)
-else:    
-    base_net_name, base_net_name_size = get_base_network_name(net_type, size, param)
+python_file_dir_name = os.path.dirname(__file__)
+dir_name = os.path.join(python_file_dir_name, '../networks', net_type)
+
+base_net_name, base_net_name_size = get_base_network_name(
+    net_type, size, param
+)
 
 for seed in seeds:
 
     output_name = base_net_name_size + '_{:05d}.txt'.format(seed)
-    net_dir_name = os.path.join(dir_name, base_net_name, base_net_name_size, output_name[:-4])
+    net_dir_name = os.path.join(
+        dir_name, base_net_name, base_net_name_size, output_name[:-4]
+    )
     pathlib.Path(net_dir_name).mkdir(parents=True, exist_ok=True)
     full_name = os.path.join(net_dir_name, output_name)
 
@@ -48,14 +84,15 @@ for seed in seeds:
 
     if net_type == 'DT':
         position_file_name = 'position.txt'
-        full_position_file_name = os.path.join(net_dir_name, position_file_name)
+        full_position_file_name = os.path.join(
+            net_dir_name, position_file_name
+        )
 
     if not overwrite:
         if os.path.isfile(full_name) or os.path.isfile(full_tar_file_name):
             continue
 
-
-    print(output_name)
+    logging.info(output_name)
     if net_type == 'ER':
         N = int(size)
         k = float(param)
@@ -80,14 +117,14 @@ for seed in seeds:
         G = ig.Graph().Lattice(dim=[L, L, L], circular=False)
     elif net_type == 'MR':
         N = int(size)
-        if param == 'rMST':
-            G = create_proximity_graph(net_type, N=N, random_seed=seed)
-        elif 'meank' in sys.argv:
-            meank = float(param)
+        if 'k' in param:
+            meank = float(param[1:])
             r = get_r_from_meank(meank, N)
             G = create_proximity_graph(net_type, N=N, r=r, random_seed=seed)
+        elif param == 'rMST':
+            G = create_proximity_graph(net_type, N=N, random_seed=seed)
         else:
-            r = float(param)
+            r = float(param[1:])
             G = create_proximity_graph(net_type, N=N, r=r, random_seed=seed)
     elif net_type in ['DT', 'GG', 'RN', 'PDT']:
         N = int(size)
@@ -109,8 +146,10 @@ for seed in seeds:
         os.remove(full_name)
 
         if net_type == 'DT':
-            ## Compress network file
-            tar = tarfile.open(os.path.join(net_dir_name, 'position.tar.gz'), 'w:gz')
+            ## Compress position file
+            tar = tarfile.open(
+                os.path.join(net_dir_name, 'position.tar.gz'), 'w:gz'
+            )
             tar.add(full_position_file_name, arcname='position.txt')
             tar.close()
 

@@ -4,8 +4,12 @@ import tarfile
 import igraph as ig
 import numpy as np
 import pandas as pd
-from auxiliary import get_base_network_name, supported_attacks, simple_props, get_property_file_name
-from auxiliary import get_number_of_nodes
+
+from auxiliary import (
+    get_base_network_name, supported_attacks, 
+    simple_props, get_property_file_name,
+    get_number_of_nodes
+)
 
 net_type = sys.argv[1]
 size = int(sys.argv[2])
@@ -37,22 +41,18 @@ print('----------------------', end='\n\n')
 
 python_file_dir_name = os.path.dirname(__file__)
 dir_name = os.path.join(python_file_dir_name, '../networks', net_type)
-if net_type == 'MR':
-    if 'meank' in sys.argv:
-        base_net_name, base_net_name_size = get_base_network_name(net_type, size, param, meank=True)
-    elif 'rMST' in sys.argv:
-        base_net_name, base_net_name_size = get_base_network_name(net_type, size, param, rMST=True)
-    else:
-        base_net_name, base_net_name_size = get_base_network_name(net_type, size, param)
-else:    
-    base_net_name, base_net_name_size = get_base_network_name(net_type, size, param)
+base_net_name, base_net_name_size = get_base_network_name(
+    net_type, size, param
+)
 
 for attack in attacks:
     print(attack)
 
     n_seeds = max_seed - min_seed
-    csv_file_name = os.path.join(dir_name, base_net_name, base_net_name_size,
-                                 'properties_{}_nSeeds{:d}_cpp.csv'.format(attack, n_seeds))
+    csv_file_name = os.path.join(
+        dir_name, base_net_name, base_net_name_size,
+        'properties_{}_nSeeds{:d}_cpp.csv'.format(attack, n_seeds)
+    )
     if not overwrite:
         if os.path.isfile(csv_file_name):
             continue
@@ -66,7 +66,9 @@ for attack in attacks:
     for seed in range(min_seed, max_seed):
 
         network = base_net_name_size + '_{:05d}'.format(seed)
-        attack_dir_name = os.path.join(dir_name, base_net_name, base_net_name_size, network, attack)
+        attack_dir_name = os.path.join(
+            dir_name, base_net_name, base_net_name_size, network, attack
+        )
 
         if verbose:
             print(seed)

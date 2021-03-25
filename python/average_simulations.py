@@ -35,16 +35,8 @@ print('max_seed =', max_seed)
 print('----------------------', end='\n\n')
 
 python_file_dir_name = os.path.dirname(__file__)
-dir_name = os.path.join(python_file_dir_name, '../networks', net_type)
-if net_type == 'MR':
-    if 'meank' in sys.argv:
-        base_net_name, base_net_name_size = get_base_network_name(net_type, size, param, meank=True)
-    elif 'rMST' in sys.argv:
-        base_net_name, base_net_name_size = get_base_network_name(net_type, size, param, rMST=True)
-    else:
-        base_net_name, base_net_name_size = get_base_network_name(net_type, size, param)
-else:    
-    base_net_name, base_net_name_size = get_base_network_name(net_type, size, param)
+dir_name = os.path.join(python_file_dir_name, '../networks', net_type)   
+base_net_name, base_net_name_size = get_base_network_name(net_type, size, param)
 
 for attack in attacks:
     print(attack)
