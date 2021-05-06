@@ -243,7 +243,8 @@ def updated_attack_nk(
                 order.append(oi)
 
         f = open(out, 'a+')
-        f_centrality = open(out_centrality, 'a+')
+        if save_centrality:
+            f_centrality = open(out_centrality, 'a+')
 
     N = g.numberOfNodes()
     while N:
@@ -259,14 +260,16 @@ def updated_attack_nk(
         if out:
             f.write('{:d}\n'.format(idx))
             f.flush()
-            f_centrality.write(
-                ','.join([str(elem) for elem in c_stats]) + '\n'
-            )
-            f_centrality.flush()
+            if save_centrality:
+                f_centrality.write(
+                    ','.join([str(elem) for elem in c_stats]) + '\n'
+                )
+                f_centrality.flush()
 
     if out:
         f.close()
-        f_centrality.close()
+        if save_centrality:
+            f_centrality.close()
 
     return order, centrality_stats
 
