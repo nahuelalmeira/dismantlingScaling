@@ -1,31 +1,80 @@
 import os
 import sys
 import tarfile
+import logging
+import argparse
 import igraph as ig
 import numpy as np
 import pandas as pd
-from auxiliary import get_base_network_name, supported_attacks, read_data_file, get_number_of_nodes
+from auxiliary import (
+    get_base_network_name, 
+    supported_attacks, 
+    read_data_file, 
+    get_number_of_nodes
+)
 
-net_type = sys.argv[1]
-size = int(sys.argv[2])
-param = sys.argv[3]
-min_seed = int(sys.argv[4])
-max_seed = int(sys.argv[5])
+def parse_args():
+    parser = argparse.ArgumentParser(
+        allow_abbrev=False,
+        description='Perform centrality-based attack on a given network'
+    )
+    parser.add_argument(
+        'net_type', type=str, help='Network type'
+    )
+    parser.add_argument(
+        'size', type=int, help='the path to list'
+    )
+    parser.add_argument(
+        'param', type=str,
+        help='Parameter characterizing the network (e.g., its mean degree)'
+    )
+    parser.add_argument(
+        'min_seed', type=int, help='Minimum random seed'
+    )
+    parser.add_argument(
+        'max_seed', type=int, help='Maximum random seed'
+    )
+    parser.add_argument(
+        '--attacks', nargs='+', type=str, default=[],
+        help='Attacks to be performed.'
+    )
+    parser.add_argument(
+        '--overwrite', action='store_true', help='Overwrite procedure'
+    )
+    parser.add_argument(
+        '--log', type=str, default='info',
+        choices=['debug', 'info', 'warning', 'error', 'exception', 'critical']
+    )
+    parser.add_argument(
+        '--fast', action='store_true', 
+        help='Use computation with no Nsec'
+    )
+    parser.add_argument(
+        '--chiDelta', action='store_true', 
+        help='Compute diff in Sgcc (slow)'
+    )
+    return parser.parse_args()
+
+args = parse_args() 
+
+net_type        = args.net_type
+size            = args.size
+param           = args.param
+min_seed        = args.min_seed
+max_seed        = args.max_seed
+attacks         = args.attacks
+overwrite       = args.overwrite
+logging_level   = args.log.upper()
+fast            = args.fast
+chiDelta        = args.chiDelta
+
+logging.basicConfig(
+    format='%(levelname)s: %(asctime)s %(message)s', 
+    datefmt='%m/%d/%Y %I:%M:%S %p',
+    level=getattr(logging, logging_level)
+)
 
 N = get_number_of_nodes(net_type, size)
-
-overwrite = False
-if 'overwrite' in sys.argv:
-    overwrite = True
-
-verbose = False
-if 'verbose' in sys.argv:
-    verbose = True
-
-attacks = []
-for attack in supported_attacks:
-    if attack in sys.argv:
-        attacks.append(attack)
 
 print('------- Params -------')
 print('net_type =', net_type)
@@ -35,23 +84,16 @@ print('max_seed =', max_seed)
 print('----------------------', end='\n\n')
 
 python_file_dir_name = os.path.dirname(__file__)
-dir_name = os.path.join(python_file_dir_name, '../networks', net_type)
-if net_type == 'MR':
-    if 'meank' in sys.argv:
-        base_net_name, base_net_name_size = get_base_network_name(net_type, size, param, meank=True)
-    elif 'rMST' in sys.argv:
-        base_net_name, base_net_name_size = get_base_network_name(net_type, size, param, rMST=True)
-    else:
-        base_net_name, base_net_name_size = get_base_network_name(net_type, size, param)
-else:    
-    base_net_name, base_net_name_size = get_base_network_name(net_type, size, param)
+dir_name = os.path.join(python_file_dir_name, '../networks', net_type)   
+base_net_name, base_net_name_size = get_base_network_name(net_type, size, param)
 base_network_dir_name = os.path.join(dir_name, base_net_name, base_net_name_size)
 
 for attack in attacks:
-    print(attack)
+    logging.info(attack)
     n_seeds = max_seed - min_seed
     output_file_name = os.path.join(
-        base_network_dir_name, 'Delta_values_' + attack + '_nSeeds{:d}.txt'.format(n_seeds)
+        base_network_dir_name, 
+        'Delta_values_' + attack + '_nSeeds{:d}.txt'.format(n_seeds)
     )
     if not overwrite:
         if os.path.isfile(output_file_name):
@@ -63,26 +105,36 @@ for attack in attacks:
     for seed in range(min_seed, max_seed):
 
         network = base_net_name_size + '_{:05d}'.format(seed)
-        attack_dir_name = os.path.join(dir_name, base_net_name, base_net_name_size, network, attack)
+        attack_dir_name = os.path.join(
+            dir_name, base_net_name, base_net_name_size, network, attack
+        )
 
         ## Read data
         try:
-            aux = read_data_file(attack_dir_name, 'comp_data', reader='numpy')
+            aux = read_data_file(
+                attack_dir_name, 'comp_data_fast', reader='numpy'
+            )
         except FileNotFoundError:
-            continue
-        except ValueError:
-            print(seed)
-            raise
+            try: 
+                aux = read_data_file(
+                    attack_dir_name, 'comp_data', reader='numpy'
+                )
+            except FileNotFoundError:
+                continue
+            except ValueError:
+                logging.error(seed)
+                raise
 
-        if verbose:
-            print(seed)
+        logging.debug(seed)
 
         len_aux = aux.shape[0]
         if len_aux > N:
-            print('ERROR: Seed {}. Len of array is greater than network size'.format(seed))
+            logging.error(
+                f'Seed {seed}. Len of array is greater than network size'
+            )
             continue
         if len_aux < 0.9*N:
-            print('ERROR: Seed {}. Len of array is too short'.format(seed))
+            logging.error(f'Seed {seed}. Len of array is too short')
             continue
 
         valid_its += 1
@@ -97,4 +149,4 @@ for attack in attacks:
 
     np.savetxt(output_file_name, delta_max_values)
 
-    print('Correct seeds = ', valid_its)
+    logging.info(f'Correct seeds = {valid_its}')

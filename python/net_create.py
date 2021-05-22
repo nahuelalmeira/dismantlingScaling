@@ -129,7 +129,10 @@ for seed in seeds:
     elif net_type in ['DT', 'GG', 'RN', 'PDT']:
         N = int(size)
         G = create_proximity_graph(net_type, N=N, random_seed=seed)
-
+    elif net_type == 'qDT':
+        N = int(size)
+        k = float(param)
+        G = create_proximity_graph(net_type, N=N, random_seed=seed, meank=k)
     G.write_edgelist(full_name)
     if net_type == 'DT':
         points = G.vs['position']
