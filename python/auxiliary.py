@@ -306,7 +306,7 @@ def save_pickle_data(data, file_name):
 def powerlaw(X, a, c):
     return c*np.array(X)**a
 
-def getLinearReg(sizes, values, t=1, scale='loglog'):
+def getLinearReg(sizes, values, scale='loglog', t=1.96):
 
     if scale == 'loglog':
         X = np.log(sizes)
@@ -328,7 +328,8 @@ def getLinearReg(sizes, values, t=1, scale='loglog'):
 
     intercept = coeffs[1]
     slope = coeffs[0]
-    y_error = t*errors[0] ## Use three times standard error
+    std = t*errors[0] 
     Y_pred = intercept + X*slope
+    y_error = t*std
 
     return np.exp(Y_pred), slope, y_error

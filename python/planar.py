@@ -286,8 +286,15 @@ def create_mr_edgelist(points, r=None, distances=None):
 
     return edgelist
 
-def create_proximity_graph(model, N=None, points=None, r=None, distances=None,
-                           random_seed=None):
+def create_proximity_graph(
+    model, 
+    N=None, 
+    points=None, 
+    r=None, 
+    distances=None,
+    random_seed=None,
+    meank=None
+):
 
     if N:
         points = create_points(N, random_seed=random_seed)
@@ -305,6 +312,12 @@ def create_proximity_graph(model, N=None, points=None, r=None, distances=None,
         edgelist, _ = create_rn_edgelist(points)
     elif model == 'GG':
         edgelist, _ = create_gabriel_edgelist(points)
+    elif model == 'qDT':
+        M = int(N*meank/2)
+        print(N, M, meank)
+        edgelist = np.array(create_dt_edgelist(points))
+        indices = np.random.choice(range(len(edgelist)), M, replace=False)
+        edgelist = edgelist[indices]
 
     G = ig.Graph()
     G.add_vertices(N)
