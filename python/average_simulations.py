@@ -1,49 +1,102 @@
 import os
 import sys
+import logging
+import argparse
 import igraph as ig
 import numpy as np
 import pandas as pd
 from auxiliary import get_base_network_name, supported_attacks, read_data_file
 from auxiliary import get_number_of_nodes
 
-net_type = sys.argv[1]
-size = int(sys.argv[2])
-param = sys.argv[3]
-min_seed = int(sys.argv[4])
-max_seed = int(sys.argv[5])
+def parse_args():
+    parser = argparse.ArgumentParser(
+        allow_abbrev=False,
+        description='Perform centrality-based attack on a given network'
+    )
+    parser.add_argument(
+        'net_type', type=str, help='Network type'
+    )
+    parser.add_argument(
+        'size', type=int, help='the path to list'
+    )
+    parser.add_argument(
+        'param', type=str,
+        help='Parameter characterizing the network (e.g., its mean degree)'
+    )
+    parser.add_argument(
+        'min_seed', type=int, help='Minimum random seed'
+    )
+    parser.add_argument(
+        'max_seed', type=int, help='Maximum random seed'
+    )
+    parser.add_argument(
+        '--attacks', nargs='+', type=str, default=[],
+        help='Attacks to be performed.'
+    )
+    parser.add_argument(
+        '--overwrite', action='store_true', help='Overwrite procedure'
+    )
+    parser.add_argument(
+        '--log', type=str, default='warning',
+        choices=['debug', 'info', 'warning', 'error', 'exception', 'critical']
+    )
+    parser.add_argument(
+        '--fast', action='store_true', 
+        help='Use computation with no Nsec'
+    )
+    parser.add_argument(
+        '--chiDelta', action='store_true', 
+        help='Compute diff in Sgcc (slow)'
+    )
+    return parser.parse_args()
+
+args = parse_args() 
+
+net_type        = args.net_type
+size            = args.size
+param           = args.param
+min_seed        = args.min_seed
+max_seed        = args.max_seed
+attacks         = args.attacks
+overwrite       = args.overwrite
+logging_level   = args.log.upper()
+fast            = args.fast
+chiDelta        = args.chiDelta
+
+logging.basicConfig(
+    format='%(levelname)s: %(asctime)s %(message)s', 
+    datefmt='%m/%d/%Y %I:%M:%S %p',
+    level=getattr(logging, logging_level)
+)
 
 N = get_number_of_nodes(net_type, size)
-
-overwrite = False
-if 'overwrite' in sys.argv:
-    overwrite = True
-
-verbose = False
-if 'verbose' in sys.argv:
-    verbose = True
-
-attacks = []
-for attack in supported_attacks:
-    if attack in sys.argv:
-        attacks.append(attack)
 
 print('------- Params -------')
 print('net_type =', net_type)
 print('param    =', param)
+print('size     =', size)
 print('min_seed =', min_seed)
 print('max_seed =', max_seed)
 print('----------------------', end='\n\n')
 
 python_file_dir_name = os.path.dirname(__file__)
 dir_name = os.path.join(python_file_dir_name, '../networks', net_type)   
-base_net_name, base_net_name_size = get_base_network_name(net_type, size, param)
+base_net_name, base_net_name_size = get_base_network_name(
+    net_type, size, param
+)
+
+comp_data_file = 'comp_data_fast' if fast else 'comp_data'
 
 for attack in attacks:
     print(attack)
 
     n_seeds = max_seed - min_seed
-    csv_file_name = os.path.join(dir_name, base_net_name, base_net_name_size,
-                                 '{}_nSeeds{:d}_cpp.csv'.format(attack, n_seeds))
+    csv_file_name = '{}_nSeeds{:d}_{}.csv'.format(
+        attack, n_seeds, ('fast' if fast else 'cpp')
+    )
+    csv_file_name = os.path.join(
+        dir_name, base_net_name, base_net_name_size, csv_file_name
+    )
     if not overwrite:
         if os.path.isfile(csv_file_name):
             continue
@@ -64,12 +117,16 @@ for attack in attacks:
 
         ## Read data
         try:
-            aux = read_data_file(attack_dir_name, 'comp_data', reader='numpy')
+            aux = read_data_file(
+                attack_dir_name, comp_data_file, reader='numpy'
+            )
         except FileNotFoundError:
             continue
+        except ValueError:
+            logging.error(f'ValueError: {seed} {comp_data_file}')
+            continue
 
-        if verbose:
-            print(seed)
+        logging.info(seed)
 
         len_aux = aux.shape[0]
         len_aux = aux.shape[0]
@@ -86,8 +143,9 @@ for attack in attacks:
         Ngcc_values += Ngcc_values_it
         Ngcc_sqr_values += Ngcc_values_it**2
 
-        chiDelta_values_it = np.append(np.diff(Ngcc_values_it), 0)
-        chiDelta_values += chiDelta_values_it
+        if chiDelta:
+            chiDelta_values_it = np.append(np.diff(Ngcc_values_it), 0)
+            chiDelta_values += chiDelta_values_it
 
         Nsec_values_it = np.append(aux[:,1][::-1], np.repeat(1, (N-len_aux)))
         Nsec_values += Nsec_values_it

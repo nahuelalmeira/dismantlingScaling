@@ -6,6 +6,8 @@ from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from cycler import cycler
 
 fig_dir = os.path.join('..', 'draft', 'figs')
+png_dir = os.path.join(fig_dir, 'png')
+pdf_dir = os.path.join(fig_dir, 'pdf')
 
 attack_dict = {
     'Ran': r'$\mathrm{Rnd}$', 'Deg': r'$\mathrm{ID}$', 'DegU': r'$\mathrm{RD}$',
@@ -14,9 +16,9 @@ attack_dict = {
     'CI': r'$\mathrm{ICI}$', 'CIU': r'$\mathrm{RCI}$', 'CIU2': r'$\mathrm{RCI2}$',
 }
 
-for i in range(2, 100):
+for i in range(2, 257):
     attack_dict['BtwU_cutoff{}'.format(i)] = r'$\mathrm{RB}$' + r'${{{}}}$'.format(i)
-    attack_dict['Btw_cutoff{}'.format(i)] = r'$\mathrm{B}$' + r'${{{}}}$'.format(i)
+    attack_dict['Btw_cutoff{}'.format(i)] = r'$\mathrm{IB}$' + r'${{{}}}$'.format(i)
 
 measures_dict = {
     'Nsec': r'$N_2$',
@@ -24,8 +26,9 @@ measures_dict = {
 }
 
 letters = [
-    r'$\mathrm{(a)}$', r'$\mathrm{(b)}$', r'$\mathrm{(c)}$', r'$\mathrm{(d)}$',
-    r'$\mathrm{(e)}$', r'$\mathrm{(f)}$', r'$\mathrm{(g)}$', r'$\mathrm{(h)}$'
+    r'$\mathrm{(a)}$', r'$\mathrm{(b)}$', r'$\mathrm{(c)}$', 
+    r'$\mathrm{(d)}$', r'$\mathrm{(e)}$', r'$\mathrm{(f)}$', 
+    r'$\mathrm{(g)}$', r'$\mathrm{(h)}$', r'$\mathrm{(i)}$'
 ]
 
 attack_colors = {
@@ -36,23 +39,25 @@ attack_colors = {
 }
 
 
-def load_delta(net_type, size, param, attack, nseeds=None, min_nseeds=None, return_nseeds=None, **kwargs):
-    dir_name = os.path.join('../networks', net_type)
-    if net_type == 'MR':
-        if 'meank' in kwargs and kwargs['meank']:
-            base_net_name, base_net_name_size = get_base_network_name(net_type, size, param, meank=True)
-        elif 'rMST' in kwargs and kwargs['rMST']:
-            base_net_name, base_net_name_size = get_base_network_name(net_type, size, param, rMST=True)
-        else:
-            base_net_name, base_net_name_size = get_base_network_name(net_type, size, param)
-    else:    
-        base_net_name, base_net_name_size = get_base_network_name(net_type, size, param)
+def load_delta(
+    net_type, 
+    size, 
+    param, 
+    attack, 
+    nseeds=None, 
+    min_nseeds=None, 
+    return_nseeds=None
+):
+    dir_name = os.path.join('../networks', net_type)   
+    base_net_name, base_net_name_size = get_base_network_name(
+        net_type, size, param
+    )
     net_dir_name = os.path.join(dir_name, base_net_name,
             base_net_name_size
     )
     if nseeds:
         delta_file_name = os.path.join(net_dir_name,
-            'Delta_values_' + attack + '_nSeeds{:d}.txt'.format(nseeds)
+            f'Delta_values_{attack}_nSeeds{nseeds}.txt'
         )
         if not os.path.isfile(delta_file_name):
             raise FileNotFoundError('File does not exist')
@@ -61,9 +66,12 @@ def load_delta(net_type, size, param, attack, nseeds=None, min_nseeds=None, retu
         files = [file for file in files if attack + '_nSeeds' in file]
 
         if not files:
-            raise FileNotFoundError('File does not exist')
+            pattern = f'Delta_values_{attack}_nSeeds*.txt'
+            raise FileNotFoundError(f'No files matching pattern {pattern}')
 
-        nseeds_values = [int(file.split('nSeeds')[1].split('.')[0]) for file in files]
+        nseeds_values = [
+            int(file.split('nSeeds')[1].split('.')[0]) for file in files
+        ]
 
         if min_nseeds:
             if np.max(nseeds_values) < min_nseeds:
@@ -81,13 +89,47 @@ def load_delta(net_type, size, param, attack, nseeds=None, min_nseeds=None, retu
 
     return delta_values
 
-def average_delta(net_type, param, attack, N_values, nseeds=None, min_nseeds=None):
+def load_deltas(
+    net_type, 
+    size, 
+    param, 
+    attack, 
+    nseeds=None,
+    n_deltas=10
+):
+    dir_name = os.path.join('../networks', net_type)   
+    base_net_name, base_net_name_size = get_base_network_name(
+        net_type, size, param
+    )
+    net_dir_name = os.path.join(dir_name, base_net_name,
+            base_net_name_size
+    )
+    delta_file_name = os.path.join(net_dir_name,
+        f'{n_deltas}_delta_values_{attack}_nSeeds{nseeds}.txt'
+    )
+    if not os.path.isfile(delta_file_name):
+        raise FileNotFoundError('File does not exist')
+
+    delta_values = np.loadtxt(delta_file_name)
+
+    return delta_values
+
+def average_delta(
+    net_type, 
+    param, 
+    attack, 
+    N_values, 
+    nseeds=None, 
+    min_nseeds=None
+):
     mean_pos_values = []
     std_pos_values = []
     mean_delta_values = []
     std_delta_values = []
     for N in N_values:
-        delta_values = load_delta(net_type, N, param, attack, nseeds=nseeds, min_nseeds=min_nseeds)
+        delta_values = load_delta(
+            net_type, N, param, attack, nseeds=nseeds, min_nseeds=min_nseeds
+        )
         pos, delta = delta_values.mean(axis=0)
         std_pos, std_delta = delta_values.std(axis=0)
         mean_pos_values.append(pos)
@@ -96,17 +138,18 @@ def average_delta(net_type, param, attack, N_values, nseeds=None, min_nseeds=Non
         std_delta_values.append(std_delta)
     return mean_pos_values, std_pos_values, mean_delta_values, std_delta_values
 
-def load_dataframe(net_type, size, param, attack, nseeds=None, min_nseeds=None, return_nseeds=None, **kwargs):
-    dir_name = os.path.join('../networks', net_type)
-    if net_type == 'MR':
-        if 'meank' in kwargs and kwargs['meank']:
-            base_net_name, base_net_name_size = get_base_network_name(net_type, size, param, meank=True)
-        elif 'rMST' in kwargs and kwargs['rMST']:
-            base_net_name, base_net_name_size = get_base_network_name(net_type, size, param, rMST=True)
-        else:
-            base_net_name, base_net_name_size = get_base_network_name(net_type, size, param)
-    else:    
-        base_net_name, base_net_name_size = get_base_network_name(net_type, size, param)
+def load_dataframe(
+    net_type, 
+    size, 
+    param, 
+    attack, 
+    nseeds=None, 
+    min_nseeds=None
+):
+    dir_name = os.path.join('../networks', net_type)   
+    base_net_name, base_net_name_size = get_base_network_name(
+        net_type, size, param
+    )
     net_dir_name = os.path.join(dir_name, base_net_name,
             base_net_name_size
     )
@@ -117,7 +160,9 @@ def load_dataframe(net_type, size, param, attack, nseeds=None, min_nseeds=None, 
     else:
         files = [file for file in os.listdir(net_dir_name) if 'cpp' in file]
         files = [file for file in files if attack + '_nSeeds' in file]
-        nseeds_values = [int(file.split('nSeeds')[1].split('_')[0]) for file in files]
+        nseeds_values = [
+            int(file.split('nSeeds')[1].split('_')[0]) for file in files
+        ]
         if not files:
             raise FileNotFoundError
         if min_nseeds:
@@ -131,10 +176,7 @@ def load_dataframe(net_type, size, param, attack, nseeds=None, min_nseeds=None, 
         full_file_name = os.path.join(net_dir_name, file_name)
 
     df = pd.read_csv(full_file_name, index_col=0)
-
-    if return_nseeds:
-        return df, nseeds
-
+    df.attrs['nseeds'] = nseeds
     return df
 
 
@@ -178,7 +220,9 @@ def get_critical_measures(dfs, measure, fc):
     return np.array(crit_values)
 
 
-def compute_fc_v2(dfs, min_f, max_f, method='beta', only_next=False, verbose=False):
+def compute_fc_v2(
+    dfs, min_f, max_f, method='beta', only_next=False, verbose=False
+):
 
     N_values = sorted(list(dfs.keys()))
 
@@ -221,7 +265,7 @@ def compute_fc_v2(dfs, min_f, max_f, method='beta', only_next=False, verbose=Fal
     fc = min_f + mean_inter
     return fc, std_inter
 
-def compute_crossings(dfs, min_f, max_f, method='beta', only_next=False, verbose=False):
+def compute_crossings(dfs, min_f, max_f, method='beta', only_next=False):
 
     N_values = sorted(list(dfs.keys()))
 
@@ -262,13 +306,20 @@ def compute_crossings(dfs, min_f, max_f, method='beta', only_next=False, verbose
 
 
 def get_rc_values(
-    sizes, l_values=None, net_type='DT', param='param', nseeds=None, min_nseeds=None,
-    verbose=False, base_attack='BtwU'):
+    sizes, 
+    l_values=None, 
+    net_type='DT', 
+    param='param', 
+    nseeds=None, 
+    min_nseeds=None,
+    verbose=False, 
+    base_attack='BtwU'
+):
 
     if l_values is None:
         l_values = np.arange(2, 100)
 
-    attacks = [base_attack] + [base_attack + '_cutoff{}'.format(l) for l in l_values]
+    attacks = [base_attack] + [base_attack + f'_cutoff{l}' for l in l_values]
     rc_values = {}
     rc_values_std = {}
     for size in sizes:
@@ -278,7 +329,8 @@ def get_rc_values(
         for attack in attacks:
             try:
                 delta_values = load_delta(
-                    net_type, size, param, attack, nseeds=nseeds, min_nseeds=min_nseeds
+                    net_type, size, param, attack, 
+                    nseeds=nseeds, min_nseeds=min_nseeds
                 )
                 rc = delta_values[:,0].mean(axis=0)
                 rc_std = delta_values[:,0].std(axis=0) / np.sqrt(delta_values.shape[0]-1)
@@ -297,19 +349,31 @@ def get_rc_values(
 
     return rc_values, rc_values_std
 
-def get_l_cutoff(sizes, threshold=0.01, rc_values=None, net_type='DT', param='param', base_attack='BtwU'):
+def get_l_cutoff(
+    sizes, 
+    threshold=0.01, 
+    rc_values=None, 
+    net_type='DT', 
+    param='param', 
+    base_attack='BtwU',
+    nseeds=1000
+):
 
     if not rc_values:
-        rc_values, _ = get_rc_values(sizes, net_type=net_type, param=param, base_attack=base_attack)
+        rc_values, rc_values_std = get_rc_values(
+            sizes, net_type=net_type,
+             param=param, base_attack=base_attack, nseeds=nseeds
+        )
 
     l_cutoff = {}
     for size in sizes:
-        rc_RB = rc_values[size][0]
+        rc = rc_values[size][0]
         for i in range(1, len(rc_values[size])):
             l = i + 1
-            rc_RBl = rc_values[size][i]
-            if not np.isnan(rc_RBl):
-                diff = (rc_RBl - rc_RB) / rc_RB
+            rc_l = rc_values[size][i]
+            if not np.isnan(rc_l):
+                diff = (rc_l - rc) / rc
+                #diff[diff<0] = threshold/100
                 if diff < threshold:
                     l_cutoff[size] = l
                     break

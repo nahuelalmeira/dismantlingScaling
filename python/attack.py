@@ -2,12 +2,15 @@ import os
 import argparse
 import logging
 from pathlib import Path
+import time
 from dismantling import get_index_list
 from auxiliary import (
     get_base_network_name, 
     get_edge_weights, 
     read_data_file
 )
+
+start = time.time()
 
 def parse_args():
     parser = argparse.ArgumentParser(
@@ -50,6 +53,10 @@ def parse_args():
         '--saveCentrality', action='store_true', 
         help='Save initial centrality values'
     )
+    parser.add_argument(
+        '--percolate', action='store_true', 
+        help='Perform Newman-Ziff algorithm for percolation'
+    )
     return parser.parse_args()
 
 args = parse_args() 
@@ -64,6 +71,7 @@ attacks         = args.attacks
 overwrite       = args.overwrite
 save_centrality = args.saveCentrality
 logging_level   = args.log.upper()
+percolate_true  = args.percolate
 
 logger = logging.getLogger(__name__)
 logger.setLevel(getattr(logging, logging_level))
@@ -80,7 +88,8 @@ base_net_dir = os.path.join(dir_name, base_net_name, base_net_name_size)
 for attack in attacks:
 
     logging.info(attack)
-
+    
+    
     for seed in seeds:
         net_name = base_net_name_size + '_{:05d}'.format(seed)
         net_dir = os.path.join(base_net_dir, net_name)
@@ -115,3 +124,58 @@ for attack in attacks:
             out_centrality=full_c_output_name,
             random_state=seed
         )
+
+        
+        if percolate_true:
+            logging.debug('pre percolate')
+            import numpy as np
+            from percolation import percolate_fast
+            from auxiliary import edgelist_to_adjlist
+
+            attack_dir = f'{net_dir}/{attack}'
+            comp_data_file = attack_dir + '/comp_data_fast.txt'
+            if os.path.exists(comp_data_file):
+                from datetime import datetime
+                reference_date = datetime(2021, 5, 17) 
+                modification_time = datetime.fromtimestamp(
+                    os.path.getctime(comp_data_file)
+                )
+                if modification_time < reference_date:
+                    os.remove(comp_data_file)
+                elif not overwrite:
+                    continue
+
+            time1 = time.time()
+            edgelist = read_data_file(net_dir, net_name, reader='numpyInt')
+            time2 = time.time()
+            logging.debug(f'load edgelist {time2-time1}')
+            time1 = time2
+
+            adjlist = edgelist_to_adjlist(edgelist, size)
+            time2 = time.time()
+            logging.debug(f'to adjlist {time2-time1}')
+            time1 = time2
+
+            time2 = time.time()
+            order = read_data_file(
+                attack_dir, 'oi_list', reader='numpyInt'
+            )[::-1]
+            logging.debug(f'load order {time2-time1}')
+            time1 = time2
+
+            ## If there are isolated nodes
+            if len(order) < size:
+                order = np.append(order, range(len(order), size))
+
+            logging.debug(f'percolate {time2-time1}')
+            perc_data = percolate_fast(adjlist, order)
+            comp_data = np.zeros((size, 3))
+            comp_data[:,0] = perc_data['N1']
+            comp_data[:,1] = np.NaN
+            comp_data[:,2] = perc_data['meanS']
+            np.savetxt(comp_data_file, comp_data)
+            logging.debug('post percolate')
+        logging.debug('finish seed')
+
+finish = time.time()
+logging.info(f'Elapsed time: {finish-start:.6f}')
