@@ -1,10 +1,12 @@
 import os
 import argparse
 import logging
+from pathlib import Path
 from dismantling import get_index_list
 from auxiliary import (
-    get_base_network_name, supported_attacks, 
-    get_edge_weights, read_data_file
+    get_base_network_name, 
+    get_edge_weights, 
+    read_data_file
 )
 
 def parse_args():
@@ -63,11 +65,8 @@ overwrite       = args.overwrite
 save_centrality = args.saveCentrality
 logging_level   = args.log.upper()
 
-logging.basicConfig(
-    format='%(levelname)s: %(asctime)s %(message)s', 
-    datefmt='%m/%d/%Y %I:%M:%S %p',
-    level=getattr(logging, logging_level)
-)
+logger = logging.getLogger(__name__)
+logger.setLevel(getattr(logging, logging_level))
 
 python_file_dir_name = os.path.dirname(__file__)
 dir_name = os.path.join(python_file_dir_name, '..', 'networks', net_type)
@@ -86,7 +85,7 @@ for attack in attacks:
         net_name = base_net_name_size + '_{:05d}'.format(seed)
         net_dir = os.path.join(base_net_dir, net_name)
 
-        logging.info(net_name)
+        logger.info(net_name)
 
         output_dir = os.path.join(net_dir, attack)
         if not os.path.exists(output_dir):
@@ -102,7 +101,7 @@ for attack in attacks:
         if os.path.isfile(full_output_name) and overwrite:
             os.remove(full_output_name)
         if save_centrality and os.path.isfile(full_c_output_name) and overwrite:
-                os.remove(full_c_output_name)
+            os.remove(full_c_output_name)
 
         g = read_data_file(net_dir, net_name, reader=package)
 

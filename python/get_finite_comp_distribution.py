@@ -57,12 +57,8 @@ overwrite       = args.overwrite
 logging_level   = args.log.upper()
 dropLargest     = args.dropLargest
 
-logging.basicConfig(
-    format='%(levelname)s: %(asctime)s %(message)s', 
-    datefmt='%m/%d/%Y %I:%M:%S %p',
-    level=getattr(logging, logging_level)
-)
-
+logger = logging.getLogger(__name__)
+logger.setLevel(getattr(logging, logging_level))
 
 dir_name = Path('../networks') / net_type
 base_net_name, base_net_name_size = get_base_network_name(net_type, size, param)
@@ -79,7 +75,7 @@ if seed_file.is_file():
         seed_file.unlink()
         past_seeds = []
     else:
-        print('Past seeds will be considered')
+        logger.info('Past seeds will be considered')
         past_seeds = np.loadtxt(seed_file, dtype=int)
 else:
     past_seeds = np.array([])
@@ -94,24 +90,26 @@ for seed in seeds:
         continue
 
     net_name = base_net_name_size + '_{:05d}'.format(seed)
-    logging.debug(net_name)
+    logger.debug(net_name)
 
     net_dir = base_net_dir / net_name
     attack_dir = net_dir / attack
 
     try:
         g = read_data_file(str(net_dir), net_name, reader='igraph')
-        oi_values = read_data_file(str(attack_dir), 'oi_list', reader='numpyInt')
+        oi_values = read_data_file(
+            str(attack_dir), 'oi_list', reader='numpyInt'
+        )
     except FileNotFoundError:
-        logging.warning('File could not be read')
+        logger.warning('File could not be read')
         continue
 
     if not g.is_simple():
-        logging.info(f'Network "{net_name}" will be considered as simple.')
+        logger.info(f'Network "{net_name}" will be considered as simple.')
         g.simplify()
 
     if g.is_directed():
-        logging.info(f'Network "{net_name}" will be considered as undirected.')
+        logger.info(f'Network "{net_name}" will be considered as undirected.')
         g.to_undirected()
 
     N = g.vcount()
@@ -120,7 +118,7 @@ for seed in seeds:
     f = float(str_f)
 
     if oi_values.size < int(f*N):
-        logging.warning('Not enough oi_values')
+        logger.warning('Not enough oi_values')
         continue
 
     oi_values = oi_values[:int(f*N)]
@@ -142,4 +140,4 @@ all_seeds = np.sort(np.concatenate((past_seeds, new_seeds)))
 if len(all_seeds):
     np.savetxt(seed_file, all_seeds, fmt='%d')
 else:
-    print('No new seeds')
+    logger.info('No new seeds')

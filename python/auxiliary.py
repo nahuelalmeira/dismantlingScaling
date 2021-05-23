@@ -7,11 +7,13 @@ import logging
 import igraph as ig
 import numpy as np
 from planar import spatial_net_types, distance
-from typing import Iterable, Tuple, Optional
+from typing import Iterable, Tuple, Optional, Set
+
+logger = logging.getLogger(__name__)
 
 simple_props = ['Ngcc', 'C', 'Cws', 'r', 'meank', 'D', 'meanl', 'meanlw']
 
-def ig_graph_to_adjlist(G):
+def ig_graph_to_adjlist(G: ig.Graph) -> Iterable[Set[int]]:
     """
     >>> G = ig.Graph()
     >>> G.add_vertices(3)
@@ -66,7 +68,11 @@ def get_property_file_name(prop, directory):
         file_name = os.path.join(directory, prop + '_values.txt')
     return file_name
 
-def get_base_network_name(net_type, size, param):
+def get_base_network_name(
+    net_type: str, 
+    size: int, 
+    param: str
+) -> Tuple[str, str]:
     if net_type == 'ER':
         base_net_name = 'ER_k{:.2f}'.format(float(param))
     elif net_type == 'RR':
@@ -85,7 +91,7 @@ def get_base_network_name(net_type, size, param):
     elif net_type == 'qDT':
         base_net_name = 'qDT_k{:.2f}'.format(float(param))
     else:
-        logging.error(f'{net_type} not supported')
+        logger.error(f'{net_type} not supported')
         base_net_name = ''
 
     if net_type in ['Lattice', 'PLattice', 'Ld3']:
@@ -106,7 +112,7 @@ supported_attacks += ['Edge_Ran', 'Edge_BtwU']
 
 def get_edge_weights(g, net_type, size, param, seed):
     if net_type not in spatial_net_types:
-        logging.info('Network type not supported for this attack')
+        logger.info('Network type not supported for this attack')
 
     N = size
 
@@ -121,7 +127,7 @@ def get_edge_weights(g, net_type, size, param, seed):
     tar_input_name = 'position.tar.gz'
     full_tar_input_name = os.path.join(net_dir_name, tar_input_name)
     if not os.path.exists(full_tar_input_name):
-        logging.error('File ' + full_tar_input_name + ' does not exist')
+        logger.error('File ' + full_tar_input_name + ' does not exist')
     tar = tarfile.open(full_tar_input_name, 'r:gz')
     tar.extractall(net_dir_name)
     tar.close()
