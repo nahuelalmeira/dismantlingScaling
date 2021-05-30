@@ -4,10 +4,12 @@ import tarfile
 import numpy as np
 import igraph as ig
 
-from dismantling import get_index_list_hybrid
-from auxiliary import get_base_network_name
+from robustness.dismantling import get_index_list_hybrid
+from robustness.auxiliary import get_base_network_name
 
-supported_attacks = ['Ran', 'Deg', 'DegU', 'Btw', 'BtwU', 'Eigenvector', 'EigenvectorU']
+supported_attacks = [
+    'Ran', 'Deg', 'DegU', 'Btw', 'BtwU', 'Eigenvector', 'EigenvectorU'
+]
 
 net_type = sys.argv[1]
 size = int(sys.argv[2])

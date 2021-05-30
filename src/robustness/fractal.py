@@ -1,6 +1,5 @@
 import numpy as np
 
-
 def get_box_count(positions, indices):
 
     N = len(positions)

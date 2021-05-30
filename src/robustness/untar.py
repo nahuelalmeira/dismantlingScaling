@@ -2,7 +2,7 @@ import os
 import sys
 import tarfile
 
-from auxiliary import get_base_network_name
+from robustness.auxiliary import get_base_network_name
 
 net_type = sys.argv[1]
 size = int(sys.argv[2])

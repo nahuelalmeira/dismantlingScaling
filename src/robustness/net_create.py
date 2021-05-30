@@ -113,7 +113,7 @@ for seed in seeds:
     seed_base_name = base_net_name_size + '_{:05d}'.format(seed)
     output_name = seed_base_name + '.txt'
     net_dir_name = (
-        Path(dir_name) / base_net_name / base_net_name_size / output_name[:-4]
+        dir_name / base_net_name / base_net_name_size / output_name[:-4]
     )
     net_dir_name.mkdir(parents=True, exist_ok=True)
     full_name = net_dir_name / output_name

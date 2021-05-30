@@ -1,7 +1,7 @@
-
+import heapq
 import numpy as np
 from typing import Set, Dict, Iterable, Any
-from auxiliary import ig_graph_to_adjlist
+from robustness.auxiliary import ig_graph_to_adjlist
 
 def findroot(ptr: Iterable[int], i: int) -> int:
     """
@@ -257,6 +257,119 @@ def percolate_fast(
                         small = -ptr[r2]
                         ptr[r1] += ptr[r2]
                         ptr[r2] = r1
+
+                    ## New GCC
+                    if -ptr[r1] > N1:
+                        new_gcc = True
+                        if large < N1:
+                            overpass = True
+                        prev_N1 = N1
+                        N1 = -ptr[r1]
+
+                    if new_gcc:
+                        if overpass:
+                            num = (
+                                num - small*small - large*large 
+                                + prev_N1*prev_N1
+                            )
+                            denom = denom - small - large + prev_N1
+                        else:
+                            num = num - small*small
+                            denom = denom - small
+                    else:
+                        num = (
+                            num - small*small - large*large 
+                            + (small+large)*(small+large)
+                        )
+
+        if denom == 0:
+            meanS = 0.0
+        else:
+            meanS = num/denom
+
+        if n_comps == 1:
+            num = denom = meanS = 0
+
+        if meanS == 0:
+            meanS = 1.0
+
+        N1_values.append(N1)
+        meanS_values.append(float(meanS))
+        num_values.append(num)
+        denom_values.append(denom)
+
+    metrics: Dict[str, Iterable[Any]] = {}
+    metrics['p'] = np.arange(N) / N
+    metrics['N1'] = N1_values
+    metrics['meanS'] = meanS_values
+    metrics['num'] = num_values
+    metrics['denom'] = denom_values
+    return metrics
+
+def percolate_heap(
+    adjlist: Iterable[Set[int]], 
+    order: Iterable[int]
+) -> Dict[str, Iterable[Any]]:
+    """
+    Newman-Ziff algorithm for percolation.
+    Adds nodes in a specific order and computes
+    giant component and other metrics on-the-fly.
+    Uses min-heap to compute N2
+    Complexity O(N log(N)) (?)
+
+    Arguments:
+        adjlist {list} -- adjacency list
+        order {list} -- order in which nodes are removed
+
+    Returns:
+        metrics {dict} -- dictionary with the computed metrics
+
+    """
+    
+    heap = []
+    heapq.heapify()
+    order = [int(v) for v in order]
+
+    N = len(order)
+    EMPTY = -(N+1)
+
+    ptr = np.zeros(N, dtype='int') + EMPTY
+
+    N1_values = []
+    meanS_values = []
+    num_values = []
+    denom_values = []
+    N1 = 1
+    num = 0
+    denom = 0
+    n_comps = 0
+    for i in range(N):
+        r1 = s1 = order[i]
+        ptr[s1] = -1
+        n_comps += 1
+        num += 1
+        denom += 1
+        for s2 in adjlist[s1]:
+            overpass = False
+            new_gcc = False
+
+            if ptr[s2] != EMPTY:
+                r2 = findroot(ptr, s2)
+                if r2 != r1:
+                    n_comps -= 1
+                    if ptr[r1] > ptr[r2]: ## s2 belongs to a greater component than s1
+                        large = -ptr[r2]
+                        small = -ptr[r1]
+                        ptr[r2] += ptr[r1] ## Merge s1 to s2
+                        ptr[r1] = r2
+                        r1 = r2
+                    else:
+                        large = -ptr[r1]
+                        small = -ptr[r2]
+                        ptr[r1] += ptr[r2]
+                        ptr[r2] = r1
+
+                    ## New GCC
                     if -ptr[r1] > N1:
                         new_gcc = True
                         if large < N1:

@@ -1,8 +1,8 @@
 import os
 import numpy as np
 import matplotlib.pyplot as plt
-
 import matplotlib as mpl
+from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 
 colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', 
           '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf', 'k', 'y',
@@ -17,7 +17,7 @@ rc_legend_size = 26
 mpl.rcParams['figure.figsize'] = (12, 8)
 mpl.rcParams['text.usetex'] = True
 #mpl.rcParams['text.latex.unicode'] = True
-mpl.rcParams['text.latex.preamble'] = [r'\boldmath']
+#mpl.rcParams['text.latex.preamble'] = [r'\boldmath']
 mpl.rcParams['lines.linewidth'] = 3
 mpl.rcParams['legend.fontsize'] = rc_legend_size
 mpl.rcParams['savefig.transparent'] = True

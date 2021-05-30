@@ -1,10 +1,8 @@
-import os
-import sys
 import argparse
 import logging
 import numpy as np
 from pathlib import Path
-from auxiliary import get_base_network_name, read_data_file
+from robustness.auxiliary import get_base_network_name, read_data_file
 
 
 def parse_args():

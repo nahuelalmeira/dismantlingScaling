@@ -2,7 +2,7 @@
 
 Compile as:
 
-g++ -o2 -std=c++11 ../source/perc_v2.cpp -o ../perc_v2
+g++ -o2 -std=c++11 ../source/perc_fast.cpp -o ../perc_fast
 
 */
 
@@ -78,7 +78,7 @@ void percolate(
   int i;
   int s1;
   int r1, r2;
-  int N1, N2;
+  int N1 = 0, N2 = 0;
   int num, denom, n_comps, large, small, prev_N1;
   double meanS;
   int N = order.size();
@@ -137,9 +137,9 @@ void percolate(
     if (denom == 0) meanS = 0.0;
     else            meanS = float(num)/denom;
     if (n_comps == 1) num = denom = meanS = 0;
-    if (meanS == 0) meanS = 1.0;
+    if (meanS < 1e-6) meanS = 1.0;
     }
-    writeData(out, N1, 0, meanS);
+    writeData(out, N1, N2, meanS);
     //printf("%i %i %i %f\n",i+1, N1, N2, meanS);
     //getchar();
   }

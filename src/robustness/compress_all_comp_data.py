@@ -1,11 +1,15 @@
 import tarfile
 import pathlib
+import logging
 from datetime import datetime
+
+from robustness import NETWORKS_DIR
+logger = logging.getLogger(__name__)
+logger.setLevel('INFO')
 
 files_compressed = 0
 
-path = pathlib.Path('../networks')
-for p in path.rglob('*/*/*/*/*'):
+for p in NETWORKS_DIR.glob('*/*/*/*/*'):
     if not p.is_dir():
         continue
     for base_name in ['comp_data', 'comp_data_fast']:
@@ -34,7 +38,7 @@ for p in path.rglob('*/*/*/*/*'):
         ## Remove network file
         full_file_name.unlink()
         files_compressed += 1
-        print(full_file_name)
+        logger.info(full_file_name)
         #input()
 
-print('Files compressed:', files_compressed)
+logger.info(f'Files compressed: {files_compressed}')

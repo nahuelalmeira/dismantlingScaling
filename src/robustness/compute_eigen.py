@@ -46,7 +46,7 @@ for attack in attacks:
     logger.info(attack)
     n_seeds = max_seed - min_seed
     output_file_name = os.path.join(
-        base_network_dir_name, 'eigen_' + attack + '_nSeeds{:d}.txt'.format(n_seeds)
+        base_network_dir_name, f'eigen_{attack}_nSeeds{n_seeds}.txt'
     )
     if not overwrite:
         if os.path.isfile(output_file_name):
@@ -106,4 +106,4 @@ for attack in attacks:
 
     np.savetxt(output_file_name, eig_values)
 
-    print('Correct seeds = ', valid_its)
+    logger.info('Correct seeds = ', valid_its)

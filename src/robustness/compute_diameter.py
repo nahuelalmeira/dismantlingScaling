@@ -1,5 +1,6 @@
 import os
 import sys
+import logging
 import numpy as np
 from robustness.auxiliary import get_base_network_name
 from robustness.planar import create_proximity_graph, get_r_from_meank

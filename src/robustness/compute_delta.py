@@ -3,6 +3,8 @@ import os
 import logging
 import argparse
 import numpy as np
+
+from robustness import NETWORKS_DIR
 from robustness.auxiliary import (
     get_base_network_name, 
     read_data_file, 
@@ -76,20 +78,21 @@ print('min_seed =', min_seed)
 print('max_seed =', max_seed)
 print('----------------------', end='\n\n')
 
-python_file_dir_name = os.path.dirname(__file__)
-dir_name = os.path.join(python_file_dir_name, '../networks', net_type)   
-base_net_name, base_net_name_size = get_base_network_name(net_type, size, param)
-base_network_dir_name = os.path.join(dir_name, base_net_name, base_net_name_size)
+dir_name = NETWORKS_DIR / net_type
+base_net_name, base_net_name_size = get_base_network_name(
+    net_type, size, param
+)
+base_network_dir_name = dir_name / base_net_name / base_net_name_size
 
 for attack in attacks:
     logger.info(attack)
     n_seeds = max_seed - min_seed
-    output_file_name = os.path.join(
-        base_network_dir_name, 
-        'Delta_values_' + attack + '_nSeeds{:d}.txt'.format(n_seeds)
+    output_file_name = (
+        base_network_dir_name / f'Delta_values_{attack}_nSeeds{n_seeds}.txt'
     )
+    
     if not overwrite:
-        if os.path.isfile(output_file_name):
+        if output_file_name.is_file():
             continue
 
     delta_max_values = []
@@ -98,19 +101,17 @@ for attack in attacks:
     for seed in range(min_seed, max_seed):
 
         network = base_net_name_size + '_{:05d}'.format(seed)
-        attack_dir_name = os.path.join(
-            dir_name, base_net_name, base_net_name_size, network, attack
-        )
+        attack_dir_name = base_network_dir_name / network / attack
 
         ## Read data
         try:
             aux = read_data_file(
-                attack_dir_name, 'comp_data_fast', reader='numpy'
+                str(attack_dir_name), 'comp_data_fast', reader='numpy'
             )
         except FileNotFoundError:
             try: 
                 aux = read_data_file(
-                    attack_dir_name, 'comp_data', reader='numpy'
+                    str(attack_dir_name), 'comp_data', reader='numpy'
                 )
             except FileNotFoundError:
                 continue

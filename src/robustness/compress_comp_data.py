@@ -28,24 +28,27 @@ for attack in attacks:
     for seed in range(min_seed, max_seed):
 
         network = base_net_name_size + '_{:05d}'.format(seed)
-        attack_dir_name = os.path.join(dir_name, base_net_name, base_net_name_size, network, attack)
+        attack_dir_name = os.path.join(
+            dir_name, base_net_name, base_net_name_size, network, attack
+        )
 
-        full_file_name  = os.path.join(attack_dir_name, 'comp_data.txt')
-        if not os.path.isfile(full_file_name):
-            continue
+        for base_name in ['comp_data', 'comp_data_fast']:
+            full_file_name = os.path.join(attack_dir_name, f'{base_name}.txt')
+            if not os.path.isfile(full_file_name):
+                continue
 
-        if verbose:
-            print(seed)
+            if verbose:
+                print(seed)
 
-        ## Compress network file
-        tar_input_name = 'comp_data.tar.gz'
-        full_tar_input_name = os.path.join(attack_dir_name, tar_input_name)
-        tar = tarfile.open(full_tar_input_name, 'w:gz')
-        tar.add(full_file_name, arcname='comp_data.txt')
-        tar.close()
+            ## Compress network file
+            tar_input_name = f'{base_name}.tar.gz'
+            full_tar_input_name = os.path.join(attack_dir_name, tar_input_name)
+            tar = tarfile.open(full_tar_input_name, 'w:gz')
+            tar.add(full_file_name, arcname= f'{base_name}.txt')
+            tar.close()
 
-        ## Remove network file
-        os.remove(full_file_name)
+            ## Remove network file
+            os.remove(full_file_name)
 
         good_seeds += 1
     print('Files compressed: ', good_seeds)

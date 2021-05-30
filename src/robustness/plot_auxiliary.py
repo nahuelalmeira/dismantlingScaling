@@ -69,7 +69,7 @@ def load_delta(
             )
     else:
         pattern = f'Delta_values_{attack}_nSeeds*'
-        files = net_dir_name.glob(pattern)
+        files = list(net_dir_name.glob(pattern))
         if not files:
             raise FileNotFoundError(f'No files matching pattern {pattern}')
 
@@ -158,8 +158,8 @@ def load_dataframe(
     if nseeds:
         full_file_name = net_dir_name / attack + f'_nSeeds{nseeds}_cpp.csv'
     else:
-        pattern = f'{attack}_nSeeds*_cpp'
-        files = net_dir_name.glob(pattern)
+        pattern = f'{attack}_nSeeds*_cpp.csv'
+        files = list(net_dir_name.glob(pattern))
         nseeds_values = [
             int(str(file).split('nSeeds')[1].split('_')[0]) for file in files
         ]
@@ -332,7 +332,7 @@ def get_rc_values(
                     nseeds=nseeds, min_nseeds=min_nseeds
                 )
                 rc = delta_values[:,0].mean(axis=0)
-                rc_std = delta_values[:,0].std(axis=0) / np.sqrt(delta_values.shape[0]-1)
+                rc_std = delta_values[:,0].std(axis=0) / np.sqrt(delta_values.shape[0])
                 rc_values[size].append(rc)
                 rc_values_std[size].append(rc_std)
             except FileNotFoundError:

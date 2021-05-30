@@ -77,7 +77,7 @@ def get_base_network_name(
     if net_type == 'ER':
         base_net_name = 'ER_k{:.2f}'.format(float(param))
     elif net_type == 'RR':
-        base_net_name = 'RR_k{:02d}'.format(float(param))
+        base_net_name = 'RR_k{:02d}'.format(int(param))
     elif net_type == 'BA':
         base_net_name = 'BA_m{:02d}'.format(int(param))
     elif net_type == 'MR':

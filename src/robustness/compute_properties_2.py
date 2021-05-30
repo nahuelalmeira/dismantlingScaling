@@ -2,12 +2,16 @@ import os
 import sys
 import json
 import pickle
-import numpy as np
-import igraph as ig
 
-from auxiliary import get_base_network_name, supported_attacks, get_property_file_name, simple_props
-from auxiliary import get_edge_weights, get_number_of_nodes, read_data_file, get_prop, save_pickle_data
-
+from robustness.auxiliary import (
+    get_base_network_name, 
+    supported_attacks, 
+    get_edge_weights, 
+    get_number_of_nodes, 
+    read_data_file, 
+    get_prop, 
+    save_pickle_data
+)
 def compute_props_step(g, properties, data_dict, step):
 
     for prop in properties:
@@ -95,16 +99,8 @@ print('----------------------', end='\n\n')
 
 python_file_dir_name = os.path.dirname(__file__)
 dir_name = os.path.join(python_file_dir_name, '../networks', net_type)
-
-if net_type == 'MR':
-    if 'meank' in sys.argv:
-        base_net_name, base_net_name_size = get_base_network_name(net_type, size, param, meank=True)
-    elif 'rMST' in sys.argv:
-        base_net_name, base_net_name_size = get_base_network_name(net_type, size, param, rMST=True)
-    else:
-        base_net_name, base_net_name_size = get_base_network_name(net_type, size, param)
-else:    
-    base_net_name, base_net_name_size = get_base_network_name(net_type, size, param)
+   
+base_net_name, base_net_name_size = get_base_network_name(net_type, size, param)
 base_net_dir = os.path.join(dir_name, base_net_name, base_net_name_size)
 
 for attack in attacks:
@@ -134,7 +130,7 @@ for attack in attacks:
             continue
 
         if oi_values.size < N:
-            print('ERROR in seed ', seed, ': File too short. Num lines', oi_values.size)
+            print(f'ERROR in seed {seed}: File too short. Num lines {oi_values.size}')
             continue
 
         g.vs['oi'] = range(N)

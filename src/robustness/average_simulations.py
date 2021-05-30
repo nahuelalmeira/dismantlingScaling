@@ -3,6 +3,8 @@ import logging
 import argparse
 import numpy as np
 import pandas as pd
+
+from robustness import NETWORKS_DIR
 from robustness.auxiliary import get_base_network_name, read_data_file
 from robustness.auxiliary import get_number_of_nodes
 
@@ -74,26 +76,24 @@ print('min_seed =', min_seed)
 print('max_seed =', max_seed)
 print('----------------------', end='\n\n')
 
-python_file_dir_name = os.path.dirname(__file__)
-dir_name = os.path.join(python_file_dir_name, '../networks', net_type)   
+
+dir_name = NETWORKS_DIR / net_type
 base_net_name, base_net_name_size = get_base_network_name(
     net_type, size, param
 )
-
+base_net_dir = dir_name / base_net_name / base_net_name_size
 comp_data_file = 'comp_data_fast' if fast else 'comp_data'
 
 for attack in attacks:
     logger.info(attack)
 
     n_seeds = max_seed - min_seed
-    csv_file_name = '{}_nSeeds{:d}_{}.csv'.format(
+    csv_file_name = base_net_dir / '{}_nSeeds{:d}_{}.csv'.format(
         attack, n_seeds, ('fast' if fast else 'cpp')
     )
-    csv_file_name = os.path.join(
-        dir_name, base_net_name, base_net_name_size, csv_file_name
-    )
+    
     if not overwrite:
-        if os.path.isfile(csv_file_name):
+        if csv_file_name.is_file():
             continue
 
     Ngcc_values     = np.zeros(N)
@@ -104,24 +104,21 @@ for attack in attacks:
 
     valid_its = 0
     for seed in range(min_seed, max_seed):
-        logger.debug(seed)
-        network = base_net_name_size + '_{:05d}'.format(seed)
-        attack_dir_name = os.path.join(
-            dir_name, base_net_name, base_net_name_size, network, attack
-            )
+        network = f'{base_net_name_size}_{seed:05d}'
+        attack_dir_name = base_net_dir / network / attack
 
         ## Read data
         try:
             aux = read_data_file(
-                attack_dir_name, comp_data_file, reader='numpy'
+                str(attack_dir_name), comp_data_file, reader='numpy'
             )
         except FileNotFoundError:
             continue
         except ValueError:
-            logging.error(f'ValueError: {seed} {comp_data_file}')
+            logger.error(f'ValueError: {seed} {comp_data_file}')
             continue
 
-        logging.info(seed)
+        logger.info(seed)
 
         len_aux = aux.shape[0]
         len_aux = aux.shape[0]
@@ -168,4 +165,4 @@ for attack in attacks:
     df = pd.DataFrame(data=d)
     df.to_csv(csv_file_name)
 
-    logger.info('Correct seeds = ', valid_its)
+    logger.info(f'Correct seeds = {valid_its}')
