@@ -324,22 +324,59 @@ def percolate_heap(
     Returns:
         metrics {dict} -- dictionary with the computed metrics
 
+    >>> # Empty graph
+    >>> adjlist = []
+    >>> order = []
+    >>> percolate_heap(adjlist, order)
+    {'p': array([], dtype=float64), 'N1': [], 'N2': [], 'meanS': [], 'num': [], 'denom': []}
+    >>> # P3 graph with Degree based attack
+    >>> adjlist = [{1}, {0, 2}, {1}]
+    >>> order = [1, 0, 2][::-1]
+    >>> metrics = percolate_heap(adjlist, order)
+    >>> {metric: [round(value, 2) for value in values] for metric, values in metrics.items()}
+    {'p': [0.0, 0.33, 0.67], 'N1': [1, 1, 3], 'N2': [0, 1, 0], 'meanS': [1.0, 1.0, 1.0], 'num': [0, 1, 0], 'denom': [0, 1, 0]}
+    >>> # P3 graph with ordered attack
+    >>> adjlist = [{1}, {0, 2}, {1}]
+    >>> order = [0, 1, 2][::-1]
+    >>> metrics = percolate_heap(adjlist, order)
+    >>> {metric: [round(value, 2) for value in values] for metric, values in metrics.items()}
+    {'p': [0.0, 0.33, 0.67], 'N1': [1, 2, 3], 'N2': [0, 0, 0], 'meanS': [1.0, 1.0, 1.0], 'num': [0, 0, 0], 'denom': [0, 0, 0]}
+    >>> # Works with np.array
+    >>> order = np.array([0., 1., 2.][::-1])
+    >>> metrics = percolate_heap(adjlist, order)
+    >>> {metric: [round(value, 2) for value in values] for metric, values in metrics.items()}
+    {'p': [0.0, 0.33, 0.67], 'N1': [1, 2, 3], 'N2': [0, 0, 0], 'meanS': [1.0, 1.0, 1.0], 'num': [0, 0, 0], 'denom': [0, 0, 0]}
+    >>> adjlist = [{1, 3}, {0, 2, 3}, {1, 3}, {0, 1, 2, 4, 5}, {3, 5}, {3, 4}]
+    >>> order = [3, 2, 1, 0, 4, 5][::-1]
+    >>> metrics = percolate_heap(adjlist, order)
+    >>> {metric: [round(value, 2) for value in values] for metric, values in metrics.items()}
+    {'p': [0.0, 0.17, 0.33, 0.5, 0.67, 0.83], 'N1': [1, 2, 2, 2, 3, 6], 'N2': [0, 0, 1, 2, 2, 0], 'meanS': [1.0, 1.0, 1.0, 2.0, 2.0, 1.0], 'num': [0, 0, 1, 4, 4, 0], 'denom': [0, 0, 1, 2, 2, 0]}
+    >>> adjlist = [{3}, {2, 6}, {1, 4}, {0}, {2}, {}, {1}]
+    >>> order = [0, 1, 2, 3, 4, 5, 6]
+    >>> metrics = percolate_heap(adjlist, order)
+    >>> metrics = {metric: [round(value, 2) for value in values] for metric, values in metrics.items()}
+    >>> metrics
+    {'p': [0.0, 0.14, 0.29, 0.43, 0.57, 0.71, 0.86], 'N1': [1, 1, 2, 2, 3, 3, 4], 'N2': [0, 1, 1, 2, 2, 2, 2], 'meanS': [1.0, 1.0, 1.0, 2.0, 2.0, 1.67, 1.67], 'num': [0, 1, 1, 4, 4, 5, 5], 'denom': [0, 1, 1, 2, 2, 3, 3]}
     """
     
+    
     heap = []
-    heapq.heapify()
     order = [int(v) for v in order]
 
     N = len(order)
     EMPTY = -(N+1)
 
+    sizes = [0] * (N+1)
+
     ptr = np.zeros(N, dtype='int') + EMPTY
 
     N1_values = []
+    N2_values = []
     meanS_values = []
     num_values = []
     denom_values = []
     N1 = 1
+    N2 = 0
     num = 0
     denom = 0
     n_comps = 0
@@ -349,11 +386,14 @@ def percolate_heap(
         n_comps += 1
         num += 1
         denom += 1
+        isolated = True
+        heapq.heappush(heap, -1)
+        sizes[1] += 1
         for s2 in adjlist[s1]:
             overpass = False
             new_gcc = False
-
             if ptr[s2] != EMPTY:
+                isolated = False
                 r2 = findroot(ptr, s2)
                 if r2 != r1:
                     n_comps -= 1
@@ -368,6 +408,16 @@ def percolate_heap(
                         small = -ptr[r2]
                         ptr[r1] += ptr[r2]
                         ptr[r2] = r1
+
+                    if sizes[small]:
+                        sizes[small] -= 1
+                    if sizes[large]:
+                        sizes[large] -= 1
+                    sizes[small+large] += 1
+                    heapq.heappush(heap, -(small+large))
+                    #print('push', -(small+large))
+                    #print('heap', [-elem for elem in heap])
+                    #print('sizes', sizes)
 
                     ## New GCC
                     if -ptr[r1] > N1:
@@ -393,6 +443,10 @@ def percolate_heap(
                             + (small+large)*(small+large)
                         )
 
+        #if isolated:
+            #heapq.heappush(heap, -1)
+        #    sizes[1] += 1
+
         if denom == 0:
             meanS = 0.0
         else:
@@ -403,8 +457,44 @@ def percolate_heap(
 
         if meanS == 0:
             meanS = 1.0
+        #print(heap)
+        if len(heap) < 2:
+            N2 = 0
+        else:
+            mN1 = heapq.heappop(heap)
+            for k in range(len(heap)):
+                size = -heapq.heappop(heap)
+                found = False
+                if sizes[size] > 0:
+                    N2 = size
+                    heapq.heappush(heap, -N2)
+                    heapq.heappush(heap, mN1)
+                    found = True
+                    break
 
+            if not found:
+                heapq.heappush(heap, mN1)
+                N2 = 0
+            """
+            if sizes[-heap[1]] > 0:
+                N2 = -heap[1]
+            else:
+                mN1 = heap[0]
+                found = False
+                for k in range(1, len(heap)):
+                    if sizes[-heap[k]] > 0:
+                        N2 = -heap[k]
+                        found = True
+                        break
+                if not found:
+                    N2 = 0
+                for _ in range(k):
+                    heapq.heappop(heap)
+                heapq.heappush(heap, mN1)
+            """
+        #print(i, N1, N2, sizes, heap)
         N1_values.append(N1)
+        N2_values.append(N2)
         meanS_values.append(float(meanS))
         num_values.append(num)
         denom_values.append(denom)
@@ -412,6 +502,7 @@ def percolate_heap(
     metrics: Dict[str, Iterable[Any]] = {}
     metrics['p'] = np.arange(N) / N
     metrics['N1'] = N1_values
+    metrics['N2'] = N2_values
     metrics['meanS'] = meanS_values
     metrics['num'] = num_values
     metrics['denom'] = denom_values
@@ -421,15 +512,28 @@ if __name__ == '__main__':
     import doctest
     doctest.testmod()
 
+
     # P5
     adjlist = [{1}, {0, 2}, {1, 3}, {2, 4}, {3}]
     order = [2, 1, 0, 3, 4][::-1]
-    metrics = percolate_fast(adjlist, order)
-    print({metric: [round(value, 2) for value in values] for metric, values in metrics.items()})
+
+    adjlist = [{3}, {2, 6}, {1, 4}, {0}, {2}, {}, {1}]
+    order = [0, 1, 2, 3, 4, 5, 6]
+
+    adjlist = [{1}, {0, 2}, {1}]
+    order = [1, 0, 2][::-1]
+
+    adjlist = [{1, 3}, {0, 2, 3}, {1, 3}, {0, 1, 2, 4, 5}, {3, 5}, {3, 4}]
+    order = [3, 2, 1, 0, 4, 5][::-1]
 
     metrics = percolate_slow(adjlist, order)
-    print({metric: [round(value, 2) for value in values] for metric, values in metrics.items() if metric != 'N2'})
+    #print({metric: [round(value, 2) for value in values] for metric, values in metrics.items() if metric != 'N2'})
+    print({metric: [round(value, 2) for value in values] for metric, values in metrics.items()})
+    
+    metrics = percolate_heap(adjlist, order)
+    print({metric: [round(value, 2) for value in values] for metric, values in metrics.items()})
 
+    """
     import igraph as ig
     import matplotlib.pyplot as plt
     N = 10000
@@ -439,15 +543,67 @@ if __name__ == '__main__':
     adjlist = ig_graph_to_adjlist(g)
     order = range(N)
 
-    metrics_fast = percolate_fast(adjlist, order)
+    metrics_heap = percolate_heap(adjlist, order)
     #print({metric: [round(value, 2) for value in values] for metric, values in metrics.items()})
 
     metrics_slow = percolate_slow(adjlist, order)
-    print({metric: [round(value, 2) for value in values] for metric, values in metrics.items() if metric != 'N2'})
+    #print({metric: [round(value, 2) for value in values] for metric, values in metrics.items())
 
-    for i, metrics in enumerate([metrics_slow, metrics_fast]):
-        label = 'fast' if i==1 else 'slow'
+    for i, metrics in enumerate([metrics_heap, metrics_slow]):
+        label = 'heap' if i==1 else 'slow'
         marker = '*' if i == 0 else 's'
-        plt.plot(metrics['p'], metrics['meanS'], marker, fillstyle='none', label=label)
-
+        plt.plot(metrics['p'], metrics['N2'], marker, fillstyle='none', label=label)
+    plt.legend()
     plt.show()
+    """
+
+    perc_func = {
+        'fast': percolate_fast,
+        #'slow': percolate_slow,
+        'heap': percolate_heap
+    }
+
+    import time
+    import numpy as np
+    import igraph as ig
+    import matplotlib.pyplot as plt
+    N = 10000
+    k = 3.5
+    p = k / N
+    g = ig.Graph().Erdos_Renyi(N, p)
+    adjlist = ig_graph_to_adjlist(g)
+    order = range(N)
+
+    sizes = [2**i for i in range(6, 20)]
+    times = {}
+
+    fig, ax = plt.subplots()
+    for i, (func_name, percolate) in enumerate(perc_func.items()):
+        times[func_name] = []
+        print(func_name)
+        for N in sizes:
+            print(N)
+            p = k / N
+            g = ig.Graph().Erdos_Renyi(N, p)
+            adjlist = ig_graph_to_adjlist(g)
+            order = range(N)
+
+            size_times = []
+            for k in range(10):
+                start = time.time()
+                metrics = percolate(adjlist, order)
+                finish = time.time()
+                size_times.append(finish-start)
+            times[func_name].append(np.mean(size_times))
+
+    for k, v in times.items():
+        times[k] = np.array(v)
+
+    ax.plot(
+        sizes, 
+        times['heap']/times['fast'], '-o', 
+        #label=func_name
+    )
+    ax.legend()
+    plt.show()
+
