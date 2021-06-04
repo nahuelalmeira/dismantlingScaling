@@ -13,13 +13,8 @@ POLYORDER = 2
 
 from collections import defaultdict
 
-sys.path.append('..')
-#from mpl_settings_v3 import *
+from robustness import NETWORKS_DIR
 
-CWD = pathlib.Path(__file__).parent
-PACKAGE_DIR = CWD.parent.parent
-NETWORKS_DIR = PACKAGE_DIR / 'networks'
-DATA_DIR = PACKAGE_DIR / 'data'
 
 LINEAR_NETWORKS = ['Lattice', 'PLattice', 'Ld3']
 NON_PARAMETRIC_NETWORKS = [

@@ -15,15 +15,18 @@ pdf_dir = fig_dir / 'pdf'
 
 attack_dict = {
     'Ran': r'$\mathrm{Rnd}$', 
-    'Deg': r'$\mathrm{ID}$', 'DegU': r'$\mathrm{RD}$',
-    'Btw': r'$\mathrm{IB}$', 'BtwU': r'$\mathrm{RB}$',
+    #'Deg': r'$\mathrm{ID}$', 'DegU': r'$\mathrm{RD}$',
+    'Deg': r'$\mathrm{Deg}$', 'DegU': r'$\mathrm{RD}$',
+    'Btw': r'$\mathrm{B}$', 'BtwU': r'$\mathrm{RB}$',
     'Eigenvector': r'$\mathrm{IE}$', 'EigenvectorU': r'$\mathrm{RE}$',
     'CI': r'$\mathrm{ICI}$', 'CIU': r'$\mathrm{RCI}$', 
     'CI2': r'$\mathrm{ICI2}$', 'CIU2': r'$\mathrm{RCI2}$',
 }
+
+
 for i in range(2, 257):
     attack_dict[f'BtwU_cutoff{i}'] = r'$\mathrm{RB}$' + r'${{{}}}$'.format(i)
-    attack_dict[f'Btw_cutoff{i}'] = r'$\mathrm{IB}$' + r'${{{}}}$'.format(i)
+    attack_dict[f'Btw_cutoff{i}'] = r'$\mathrm{B}$' + r'${{{}}}$'.format(i)
 
 measures_dict = {
     'Nsec': r'$N_2$',
@@ -156,7 +159,7 @@ def load_dataframe(
     )
     net_dir_name = dir_name / base_net_name / base_net_name_size
     if nseeds:
-        full_file_name = net_dir_name / attack + f'_nSeeds{nseeds}_cpp.csv'
+        full_file_name = net_dir_name / (attack + f'_nSeeds{nseeds}_cpp.csv')
     else:
         pattern = f'{attack}_nSeeds*_cpp.csv'
         files = list(net_dir_name.glob(pattern))

@@ -19,7 +19,7 @@ for attack in supported_attacks:
         attacks.append(attack)
 
 python_file_dir_name = os.path.dirname(__file__)
-dir_name = os.path.join(python_file_dir_name, '../networks', net_type)
+dir_name = os.path.join(python_file_dir_name, '../../networks', net_type)
 base_net_name, base_net_name_size = get_base_network_name(net_type, size, param)
 
 for attack in attacks:
