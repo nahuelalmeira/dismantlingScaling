@@ -27,17 +27,13 @@ NET_DIR="${BASE_NET_DIR}/${NET_NAME}"
 NETWORK="${NET_DIR}/${NET_NAME}.txt"
 NETWORK_TAR="${NET_DIR}/${NET_NAME}.tar.gz"
 
-if [ -f "${NETWORK_TAR}" ]; then
-    #echo "Extracting data from ${NETWORK_TAR}"
-    tar --directory=${NET_DIR} -xzf ${NETWORK_TAR}
-fi
-
 ORDER="${NET_DIR}/${ATTACK}/oi_list.txt"
 echo ${ORDER}
 if [ -f "${ORDER}" ]; then
     if [ ! -s "${ORDER}" ]; then
         echo "File ${ORDER} has 0 size and it will be removed."
         rm ${ORDER}
+        exit 0
     fi
 fi
 
@@ -51,7 +47,7 @@ if [ ! -f "${ORDER}" ]; then
     exit 0
 fi
 
-TAR_FILE="${NET_DIR}/${ATTACK}/comp_data_fast.tar.gz"
+TAR_FILE="${NET_DIR}/${ATTACK}/comp_data.tar.gz"
 if [ -f "${TAR_FILE}" ]; then
     if [ "${OVERWRITE}" == "True" ]; then
         rm ${TAR_FILE}
@@ -61,7 +57,7 @@ if [ -f "${TAR_FILE}" ]; then
     fi
 fi
 
-OUTPUT="${NET_DIR}/${ATTACK}/comp_data_heap.txt"
+OUTPUT="${NET_DIR}/${ATTACK}/comp_data.txt"
 if [ -f "${OUTPUT}" ]; then
     if [ ! -s "${OUTPUT}" ]; then
         echo "File ${OUTPUT} has 0 size and it will be removed."
@@ -74,6 +70,11 @@ if [ "${OVERWRITE}" != "True" ]; then
         echo "File ${OUTPUT} already exist"
         exit 0
     fi
+fi
+
+if [ -f "${NETWORK_TAR}" ]; then
+    #echo "Extracting data from ${NETWORK_TAR}"
+    tar --directory=${NET_DIR} -xzf ${NETWORK_TAR}
 fi
 
 ../perc_heap $NETWORK $ORDER $OUTPUT 

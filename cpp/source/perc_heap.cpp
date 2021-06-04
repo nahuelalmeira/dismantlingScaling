@@ -227,7 +227,7 @@ void percolate(
   num = denom = n_comps = 0;
 
   PriorityQueue heap;
-  int sizes[N+1] = {};
+  vector<int> sizes(N+1, 0);
 
   for (i=0; i<N; i++) ptr[i] = EMPTY;
   for (i=0; i<N; i++) {
