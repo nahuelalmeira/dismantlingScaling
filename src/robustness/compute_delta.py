@@ -44,10 +44,6 @@ def parse_args():
         choices=['debug', 'info', 'warning', 'error', 'exception', 'critical']
     )
     parser.add_argument(
-        '--fast', action='store_true', 
-        help='Use computation with no Nsec'
-    )
-    parser.add_argument(
         '--chiDelta', action='store_true', 
         help='Compute diff in Sgcc (slow)'
     )
@@ -63,7 +59,6 @@ max_seed        = args.max_seed
 attacks         = args.attacks
 overwrite       = args.overwrite
 logging_level   = args.log.upper()
-fast            = args.fast
 chiDelta        = args.chiDelta
 
 logger = logging.getLogger(__name__)
@@ -74,6 +69,7 @@ N = get_number_of_nodes(net_type, size)
 print('------- Params -------')
 print('net_type =', net_type)
 print('param    =', param)
+print('size     =', size)
 print('min_seed =', min_seed)
 print('max_seed =', max_seed)
 print('----------------------', end='\n\n')
@@ -100,24 +96,20 @@ for attack in attacks:
     valid_its = 0
     for seed in range(min_seed, max_seed):
 
-        network = base_net_name_size + '_{:05d}'.format(seed)
+        network = base_net_name_size + f'_{seed:05d}'
         attack_dir_name = base_network_dir_name / network / attack
 
         ## Read data
-        try:
+        try: 
             aux = read_data_file(
-                str(attack_dir_name), 'comp_data_fast', reader='numpy'
-            )
+                str(attack_dir_name), 'comp_data', reader='pandas',
+                sep=' ', header=None
+            ).values
         except FileNotFoundError:
-            try: 
-                aux = read_data_file(
-                    str(attack_dir_name), 'comp_data', reader='numpy'
-                )
-            except FileNotFoundError:
-                continue
-            except ValueError:
-                logger.error(seed)
-                raise
+            continue
+        except Exception:
+            logger.exception(seed)
+            raise
 
         logger.debug(seed)
 
@@ -137,7 +129,7 @@ for attack in attacks:
         delta_values = np.abs(np.diff(Ngcc_values))
         max_pos = np.argmax(delta_values)
         delta_max = delta_values[max_pos]
-        Sgcc_c = Ngcc_values[max_pos] / N
+        Sgcc_c = Ngcc_values[max_pos+1] / N
 
         delta_max_values.append([max_pos/N, delta_max/N, Sgcc_c])
 

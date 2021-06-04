@@ -41,10 +41,6 @@ def parse_args():
         choices=['debug', 'info', 'warning', 'error', 'exception', 'critical']
     )
     parser.add_argument(
-        '--fast', action='store_true', 
-        help='Use computation with no Nsec'
-    )
-    parser.add_argument(
         '--chiDelta', action='store_true', 
         help='Compute diff in Sgcc (slow)'
     )
@@ -60,7 +56,6 @@ max_seed        = args.max_seed
 attacks         = args.attacks
 overwrite       = args.overwrite
 logging_level   = args.log.upper()
-fast            = args.fast
 chiDelta        = args.chiDelta
 
 logger = logging.getLogger(__name__)
@@ -82,25 +77,25 @@ base_net_name, base_net_name_size = get_base_network_name(
     net_type, size, param
 )
 base_net_dir = dir_name / base_net_name / base_net_name_size
-comp_data_file = 'comp_data_fast' if fast else 'comp_data'
+comp_data_file = 'comp_data'
 
 for attack in attacks:
     logger.info(attack)
 
     n_seeds = max_seed - min_seed
-    csv_file_name = base_net_dir / '{}_nSeeds{:d}_{}.csv'.format(
-        attack, n_seeds, ('fast' if fast else 'cpp')
-    )
+    csv_file_name = base_net_dir / f'{attack}_nSeeds{n_seeds:d}_cpp.csv'
     
     if not overwrite:
         if csv_file_name.is_file():
             continue
 
-    Ngcc_values     = np.zeros(N)
-    Ngcc_sqr_values = np.zeros(N)
-    Nsec_values     = np.zeros(N)
-    meanS_values    = np.zeros(N)
-    chiDelta_values = np.zeros(N)
+    Ngcc_values          = np.zeros(N)
+    Ngcc_sqr_values      = np.zeros(N)
+    Nsec_values          = np.zeros(N)
+    meanS_values         = np.zeros(N)
+    meanS_pow2_values    = np.zeros(N)
+    meanS_pow4_values    = np.zeros(N)
+    chiDelta_values      = np.zeros(N)
 
     valid_its = 0
     for seed in range(min_seed, max_seed):
@@ -110,8 +105,9 @@ for attack in attacks:
         ## Read data
         try:
             aux = read_data_file(
-                str(attack_dir_name), comp_data_file, reader='numpy'
-            )
+                str(attack_dir_name), comp_data_file, 
+                reader='pandas', sep=' ', header=None
+            ).values
         except FileNotFoundError:
             continue
         except ValueError:
@@ -120,7 +116,6 @@ for attack in attacks:
 
         logger.info(seed)
 
-        len_aux = aux.shape[0]
         len_aux = aux.shape[0]
         if len_aux > N:
             logger.error(
@@ -131,21 +126,33 @@ for attack in attacks:
             logger.error(f'ERROR: Seed {seed}. Len of array is too short')
             continue
 
-        valid_its += 1
+        if np.min(aux) < 0:
+            logger.error(seed)
 
-        Ngcc_values_it = np.append(aux[:,0][::-1], np.repeat(1, (N-len_aux)))
+        valid_its += 1
+        
+        if len_aux < N:
+            aux = np.append(
+                aux[::-1], np.repeat([1]*aux.shape[1], (N-len_aux))
+            )
+        else:
+            aux = aux[::-1]
+
+        Ngcc_values_it = aux[:,0]
+        Nsec_values_it = aux[:,1]
+        meanS_values_it = aux[:,2]
+
         Ngcc_values += Ngcc_values_it
         Ngcc_sqr_values += Ngcc_values_it**2
+        Nsec_values += Nsec_values_it
+        meanS_values += meanS_values_it
+
+        meanS_pow2_values += meanS_values_it**2
+        meanS_pow4_values += meanS_values_it**4
 
         if chiDelta:
             chiDelta_values_it = np.append(np.diff(Ngcc_values_it), 0)
             chiDelta_values += chiDelta_values_it
-
-        Nsec_values_it = np.append(aux[:,1][::-1], np.repeat(1, (N-len_aux)))
-        Nsec_values += Nsec_values_it
-
-        meanS_values_it = np.append(aux[:,2][::-1], np.repeat(1, (N-len_aux)))
-        meanS_values += meanS_values_it
 
     varSgcc_values = (Ngcc_sqr_values/valid_its - (Ngcc_values/valid_its)**2) / (N)
     Ngcc_values = Ngcc_values / valid_its
@@ -153,6 +160,8 @@ for attack in attacks:
     Nsec_values = Nsec_values / valid_its
     meanS_values = meanS_values / valid_its
     chiDelta_values = chiDelta_values / valid_its
+    meanS_pow2_values = meanS_pow2_values / valid_its
+    meanS_pow4_values = meanS_pow4_values / valid_its
 
     d = {
         'f': np.arange(N)/N,
@@ -160,7 +169,9 @@ for attack in attacks:
         'varSgcc': varSgcc_values,
         'Nsec': Nsec_values,
         'meanS': meanS_values,
-        'chiDelta': chiDelta_values
+        'chiDelta': chiDelta_values,
+        'meanS_pow2': meanS_pow2_values,
+        'meanS_pow4': meanS_pow4_values
     }
     df = pd.DataFrame(data=d)
     df.to_csv(csv_file_name)

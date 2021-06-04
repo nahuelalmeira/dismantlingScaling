@@ -1,7 +1,8 @@
-import os
 import logging
 import argparse
 import numpy as np
+
+from robustness import NETWORKS_DIR
 from robustness.auxiliary import (
     get_base_network_name, 
     read_data_file, 
@@ -41,10 +42,6 @@ def parse_args():
         choices=['debug', 'info', 'warning', 'error', 'exception', 'critical']
     )
     parser.add_argument(
-        '--fast', action='store_true', 
-        help='Use computation with no Nsec'
-    )
-    parser.add_argument(
         '--chiDelta', action='store_true', 
         help='Compute diff in Sgcc (slow)'
     )
@@ -64,7 +61,6 @@ max_seed        = args.max_seed
 attacks         = args.attacks
 overwrite       = args.overwrite
 logging_level   = args.log.upper()
-fast            = args.fast
 chiDelta        = args.chiDelta
 n_deltas        = args.n_deltas
 
@@ -80,20 +76,19 @@ print('min_seed =', min_seed)
 print('max_seed =', max_seed)
 print('----------------------', end='\n\n')
 
-python_file_dir_name = os.path.dirname(__file__)
-dir_name = os.path.join(python_file_dir_name, '../networks', net_type)   
+dir_name = NETWORKS_DIR / net_type
 base_net_name, base_net_name_size = get_base_network_name(net_type, size, param)
-base_network_dir_name = os.path.join(dir_name, base_net_name, base_net_name_size)
+base_network_dir_name = dir_name / base_net_name / base_net_name_size
 
 for attack in attacks:
     logger.info(attack)
     n_seeds = max_seed - min_seed
-    output_file_name = os.path.join(
-        base_network_dir_name, 
+    output_file_name = (
+        base_network_dir_name /
         f'{n_deltas}_delta_values_{attack}_nSeeds{n_seeds}.txt'
     )
     if not overwrite:
-        if os.path.isfile(output_file_name):
+        if output_file_name.is_file():
             continue
 
     delta_max_values = []
@@ -102,25 +97,18 @@ for attack in attacks:
     for seed in range(min_seed, max_seed):
 
         network = base_net_name_size + '_{:05d}'.format(seed)
-        attack_dir_name = os.path.join(
-            dir_name, base_net_name, base_net_name_size, network, attack
-        )
+        attack_dir_name = base_network_dir_name / network / attack
 
         ## Read data
-        try:
+        try: 
             aux = read_data_file(
-                attack_dir_name, 'comp_data_fast', reader='numpy'
+                str(attack_dir_name), 'comp_data', reader='numpy'
             )
         except FileNotFoundError:
-            try: 
-                aux = read_data_file(
-                    attack_dir_name, 'comp_data', reader='numpy'
-                )
-            except FileNotFoundError:
-                continue
-            except ValueError:
-                logger.error(seed)
-                raise
+            continue
+        except ValueError:
+            logger.error(seed)
+            raise
 
         logger.debug(seed)
 

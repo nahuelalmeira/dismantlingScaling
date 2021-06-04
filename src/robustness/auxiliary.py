@@ -4,8 +4,10 @@ import tarfile
 import pickle
 import json
 import logging
+import pandas as pd
 import igraph as ig
 import numpy as np
+from pathlib import Path
 from typing import Iterable, Tuple, Optional, Set
 
 from robustness.planar import spatial_net_types, distance
@@ -148,7 +150,10 @@ def read_data_file(
     base_name, 
     reader, 
     file_ext='.txt', 
-    compress_ext='.tar.gz'
+    compress_ext='.tar.gz',
+    sep=' ',
+    header=None, 
+    names=None
 ):
     """Auxiliary function for reading common data files, 
     which could be compressed.
@@ -177,6 +182,10 @@ def read_data_file(
                 file_name, fileformat=netKit.Format.EdgeListSpaceZero, 
                 directed=False
             )
+        elif reader == 'pandas':
+            return pd.read_csv(
+                file_name, sep=sep, header=header, names=names
+            )
 
     compress_file_name = base_name + compress_ext
     full_compress_file_name = os.path.join(directory, compress_file_name)
@@ -191,6 +200,10 @@ def read_data_file(
         tar = tarfile.open(full_compress_file_name, 'r:gz')
         tar.extractall(directory)
         tar.close()
+
+        if Path(full_data_file_name).stat().st_size == 0:
+            Path(full_data_file_name).unlink()
+            raise FileNotFoundError(full_data_file_name)
 
         data = read(full_data_file_name, reader)
 
