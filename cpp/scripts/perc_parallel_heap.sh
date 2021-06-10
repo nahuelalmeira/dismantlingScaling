@@ -24,10 +24,11 @@ fi
 
 
 NET_DIR="${BASE_NET_DIR}/${NET_NAME}"
+ATTACK_DIR="${NET_DIR}/${ATTACK}"
 NETWORK="${NET_DIR}/${NET_NAME}.txt"
 NETWORK_TAR="${NET_DIR}/${NET_NAME}.tar.gz"
 
-ORDER="${NET_DIR}/${ATTACK}/oi_list.txt"
+ORDER="${ATTACK_DIR}/oi_list.txt"
 echo ${ORDER}
 if [ -f "${ORDER}" ]; then
     if [ ! -s "${ORDER}" ]; then
@@ -47,7 +48,7 @@ if [ ! -f "${ORDER}" ]; then
     exit 0
 fi
 
-TAR_FILE="${NET_DIR}/${ATTACK}/comp_data.tar.gz"
+TAR_FILE="${ATTACK_DIR}/comp_data.tar.gz"
 if [ -f "${TAR_FILE}" ]; then
     if [ "${OVERWRITE}" == "True" ]; then
         rm ${TAR_FILE}
@@ -57,7 +58,7 @@ if [ -f "${TAR_FILE}" ]; then
     fi
 fi
 
-OUTPUT="${NET_DIR}/${ATTACK}/comp_data.txt"
+OUTPUT="${ATTACK_DIR}/comp_data.txt"
 if [ -f "${OUTPUT}" ]; then
     if [ ! -s "${OUTPUT}" ]; then
         echo "File ${OUTPUT} has 0 size and it will be removed."
@@ -81,4 +82,16 @@ fi
 
 if [ -f "${NETWORK_TAR}" ]; then
     rm ${NETWORK}
+else
+    tar --directory=${NET_DIR} -czf ${NETWORK_TAR} ${NETWORK}
+    if [ -f "${NETWORK_TAR}" ]; then
+        rm ${NETWORK}
+    fi
+fi
+
+## Compress component data and remove original
+tar -czf ${TAR_FILE} --directory ${ATTACK_DIR} comp_data.txt
+
+if [ -f "${TAR_FILE}" ]; then
+    rm ${OUTPUT}
 fi
