@@ -2,6 +2,8 @@ import argparse
 import logging
 import numpy as np
 from pathlib import Path
+
+from robustness import NETWORKS_DIR
 from robustness.auxiliary import get_base_network_name, read_data_file
 
 
@@ -58,7 +60,7 @@ dropLargest     = args.dropLargest
 logger = logging.getLogger(__name__)
 logger.setLevel(getattr(logging, logging_level))
 
-dir_name = Path('../networks') / net_type
+dir_name = NETWORKS_DIR / net_type
 base_net_name, base_net_name_size = get_base_network_name(net_type, size, param)
 base_net_dir = dir_name / base_net_name / base_net_name_size
 

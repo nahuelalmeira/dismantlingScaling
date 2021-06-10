@@ -26,7 +26,7 @@ def parse_args():
         default='*'
     )
     parser.add_argument(
-        '--log', type=str, default='info',
+        '--log', type=str, default='warning',
         choices=['debug', 'info', 'warning', 'error', 'exception', 'critical']
     )
     return parser.parse_args()
@@ -58,9 +58,11 @@ for p in NETWORKS_DIR.glob(pattern):
     if not p.is_dir():
         continue
 
+    logger.debug(f'Visiting path {str(p)}')
     for fast_file in ['comp_data_fast.txt', 'comp_data_fast.tar.gz']:
         full_fast_file = p / 'comp_data_fast.txt'
         if full_fast_file.is_file():
+            logger.info(f'Removing file    {full_fast_file}')
             full_fast_file.unlink()
 
     base_name = 'comp_data'
@@ -69,6 +71,7 @@ for p in NETWORKS_DIR.glob(pattern):
         continue
 
     ## Compress comp_data file
+    logger.info(f'Compressing file {full_file_name}')
     full_tar_input_name = p / f'{base_name}.tar.gz'
     tar = tarfile.open(full_tar_input_name, 'w:gz')
     tar.add(full_file_name, arcname= f'{base_name}.txt')
@@ -77,7 +80,6 @@ for p in NETWORKS_DIR.glob(pattern):
     ## Remove comp_data file
     full_file_name.unlink()
     files_compressed += 1
-    logger.info(full_file_name)
     #input()
 
 logger.info(f'Files compressed: {files_compressed}')

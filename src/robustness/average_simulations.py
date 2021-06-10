@@ -37,7 +37,7 @@ def parse_args():
         '--overwrite', action='store_true', help='Overwrite procedure'
     )
     parser.add_argument(
-        '--log', type=str, default='warning',
+        '--log', type=str, default='info',
         choices=['debug', 'info', 'warning', 'error', 'exception', 'critical']
     )
     parser.add_argument(

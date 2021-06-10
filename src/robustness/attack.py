@@ -1,8 +1,8 @@
 import os
 import argparse
 import logging
-from pathlib import Path
 import time
+import igraph as ig
 
 from robustness import NETWORKS_DIR
 from robustness.dismantling import get_index_list
@@ -113,7 +113,13 @@ for attack in attacks:
         if save_centrality and full_c_output_name.is_file and overwrite:
             full_c_output_name.unlink()
 
-        g = read_data_file(net_dir, net_name, reader=package)
+        try:
+            g = read_data_file(net_dir, net_name, reader=package)
+        except ig._igraph.InternalError as e:
+            ## TODO: See why this error sometimes arises
+            logger.exception(e)
+            continue
+
 
         if 'BtwWU' in attack:
             g.es['weight'] = get_edge_weights(g, net_type, size, param, seed)

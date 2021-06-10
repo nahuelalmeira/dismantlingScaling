@@ -109,7 +109,7 @@ for attack in attacks:
             continue
         except Exception:
             logger.exception(seed)
-            raise
+            continue
 
         logger.debug(seed)
 
