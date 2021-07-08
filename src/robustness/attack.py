@@ -2,6 +2,8 @@ import os
 import argparse
 import logging
 import time
+import tarfile
+import numpy as np
 import igraph as ig
 
 from robustness import NETWORKS_DIR
@@ -9,7 +11,9 @@ from robustness.dismantling import get_index_list
 from robustness.auxiliary import (
     get_base_network_name, 
     get_edge_weights, 
-    read_data_file
+    read_data_file,
+    get_number_of_nodes,
+    deterministic_networks
 )
 
 start = time.time()
@@ -92,14 +96,22 @@ for attack in attacks:
     
     
     for seed in seeds:
+
+        ## For deterministic networks I read the same file for all seeds
+        if net_type in deterministic_networks:
+            net_seed = 0
+        else:
+            net_seed = seed
+        input_net_name = base_net_name_size + '_{:05d}'.format(net_seed)
+        input_net_dir = base_net_dir / input_net_name
+
         net_name = base_net_name_size + '_{:05d}'.format(seed)
         net_dir = base_net_dir / net_name
 
         logger.info(net_name)
 
         output_dir = net_dir / attack
-        if not output_dir.is_dir():
-            os.mkdir(output_dir)
+        output_dir.mkdir(parents=True, exist_ok=True)
         output_name = 'oi_list.txt'
         full_output_name = output_dir / output_name
 
@@ -113,13 +125,26 @@ for attack in attacks:
         if save_centrality and full_c_output_name.is_file and overwrite:
             full_c_output_name.unlink()
 
+        if attack == 'Ran':
+            if full_output_name.is_file():
+                continue
+            np.random.seed(seed)
+            N = get_number_of_nodes(net_type, size)
+            oi_arr = np.array(range(N))
+            np.random.shuffle(oi_arr)
+            np.savetxt(full_output_name, oi_arr, fmt='%d')
+            continue
+
         try:
-            g = read_data_file(net_dir, net_name, reader=package)
+            g = read_data_file(input_net_dir, input_net_name, reader=package)
         except ig._igraph.InternalError as e:
             ## TODO: See why this error sometimes arises
             logger.exception(e)
             continue
-
+        except tarfile.ReadError as e:
+            ## TODO: See why this error sometimes arises
+            logger.exception(e)
+            continue
 
         if 'BtwWU' in attack:
             g.es['weight'] = get_edge_weights(g, net_type, size, param, seed)
@@ -140,17 +165,7 @@ for attack in attacks:
             from robustness.auxiliary import edgelist_to_adjlist
 
             attack_dir = f'{str(net_dir)}/{attack}'
-            comp_data_file = attack_dir + '/comp_data_fast.txt'
-            if os.path.exists(comp_data_file):
-                from datetime import datetime
-                reference_date = datetime(2021, 5, 17) 
-                modification_time = datetime.fromtimestamp(
-                    os.path.getctime(comp_data_file)
-                )
-                if modification_time < reference_date:
-                    os.remove(comp_data_file)
-                elif not overwrite:
-                    continue
+            comp_data_file = attack_dir + '/comp_data_python.txt'
 
             time1 = time.time()
             edgelist = read_data_file(net_dir, net_name, reader='numpyInt')

@@ -14,6 +14,10 @@ from robustness.planar import spatial_net_types, distance
 
 logger = logging.getLogger(__name__)
 
+deterministic_networks = [
+    'Lattice', 'PLattice'
+]
+
 simple_props = ['Ngcc', 'C', 'Cws', 'r', 'meank', 'D', 'meanl', 'meanlw']
 
 def ig_graph_to_adjlist(G: ig.Graph) -> Iterable[Set[int]]:
