@@ -62,8 +62,8 @@ double computeMeanS(const vector<int>& sizes) {
 
     if (sizes[1] == 0) return 1.;
 
-    double numerator = 0.;
-    double denominator = 0.;
+    long numerator = 0.;
+    long denominator = 0.;
     int s;
     int N = sizes.size();
     for (int i=0; i<N; i++) {
@@ -71,7 +71,7 @@ double computeMeanS(const vector<int>& sizes) {
         numerator += s*s;
         denominator += s;
     }
-    return numerator/denominator;
+    return (1.0*numerator)/denominator;
 }
 
 void computeMeasures(vector<int>& ptr, int& N1, int& N2, double& meanS) {

@@ -51,7 +51,7 @@ if [ ! -f "${ORDER}" ]; then
     exit 0
 fi
 
-TAR_FILE="${NET_DIR}/${ATTACK}/comp_data.tar.gz"
+TAR_FILE="${NET_DIR}/${ATTACK}/comp_data_v2.tar.gz"
 if [ -f "${TAR_FILE}" ]; then
     if [ "${OVERWRITE}" == "True" ]; then
         rm ${TAR_FILE}
@@ -61,7 +61,7 @@ if [ -f "${TAR_FILE}" ]; then
     fi
 fi
 
-OUTPUT="${NET_DIR}/${ATTACK}/comp_data.txt"
+OUTPUT="${NET_DIR}/${ATTACK}/comp_data_v2.txt"
 if [ -f "${OUTPUT}" ]; then
     if [ ! -s "${OUTPUT}" ]; then
         echo "File ${OUTPUT} has 0 size and it will be removed."

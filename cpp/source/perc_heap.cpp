@@ -24,34 +24,34 @@ struct PriorityQueue
 {
 private:
 	// vector to store heap elements
-	vector<int> A;
+	vector<long> A;
 
 	// return parent of `A[i]`
 	// don't call this function if `i` is already a root node
-	int PARENT(int i) {
+	long PARENT(long i) {
 		return (i - 1) / 2;
 	}
 
 	// return left child of `A[i]`
-	int LEFT(int i) {
+	long LEFT(long i) {
 		return (2*i + 1);
 	}
 
 	// return right child of `A[i]`
-	int RIGHT(int i) {
+	long RIGHT(long i) {
 		return (2*i + 2);
 	}
 
 	// Recursive heapify-down algorithm.
 	// The node at index `i` and its two direct children
 	// violates the heap property
-	void heapify_down(int i)
+	void heapify_down(long i)
 	{
 		// get left and right child of node at index `i`
-		int left = LEFT(i);
-		int right = RIGHT(i);
+		long left = LEFT(i);
+		long right = RIGHT(i);
 
-		int largest = i;
+		long largest = i;
 
 		// compare `A[i]` with its left and right child
 		// and find the largest value
@@ -73,7 +73,7 @@ private:
 	}
 
 	// Recursive heapify-up algorithm
-	void heapify_up(int i)
+	void heapify_up(long i)
 	{
 		// check if the node at index `i` and its parent violate the heap property
 		if (i && A[PARENT(i)] < A[i])
@@ -88,7 +88,7 @@ private:
 
 public:
 	// return size of the heap
-	unsigned int size() {
+	unsigned long size() {
 		return A.size();
 	}
 
@@ -98,13 +98,13 @@ public:
 	}
 
 	// insert key into the heap
-	void push(int key)
+	void push(long key)
 	{
 		// insert a new element at the end of the vector
 		A.push_back(key);
 
 		// get element index and call heapify-up procedure
-		int index = size() - 1;
+		long index = size() - 1;
 		heapify_up(index);
 	}
 
@@ -134,7 +134,7 @@ public:
 	}
 
 	// Function to return an element with the highest priority (present at the root)
-	int top()
+	long top()
 	{
 		try {
 			// if the heap has no elements, throw an exception
@@ -151,13 +151,14 @@ public:
 		catch (const out_of_range &oor) {
 			cout << endl << oor.what();
 		}
+        return 0; // Dummy return
 	}
 };
 
-int loadOrder(const string file_name, vector<int>& order, bool verbose) {
+int loadOrder(const string file_name, vector<long>& order, bool verbose) {
 
   ifstream file;
-  int node, N=0;
+  long node, N=0;
     /* First loop to get N and M */
     file.open(file_name);
     if(!file.is_open()) {
@@ -179,9 +180,13 @@ int loadOrder(const string file_name, vector<int>& order, bool verbose) {
     return N;
 }
 
-void loadNeighbors(const string file_name, vector<set<int> >& nn_set, bool verbose) {
+void loadNeighbors(
+    const string file_name,
+    vector<set<long> >& nn_set, 
+    bool verbose
+) {
     ifstream file;
-    int a, b;
+    long a, b;
     if(verbose) cout << "Adding data to graph" << endl;
     /* Second loop to add data to graph */
     file.open(file_name, ios::in);
@@ -195,39 +200,48 @@ void loadNeighbors(const string file_name, vector<set<int> >& nn_set, bool verbo
     file.close();
 }
 
-void writeData(ostream& out, int N1, int N2, double meanS) {
-    out << N1 << " " << N2 << " " << meanS << endl;
+void writeData(
+    ostream& out, 
+    long N1, 
+    long N2, 
+    double meanS, 
+    long num, 
+    long denom, 
+    double mean_comp_size
+) {
+    out << N1 << " " << N2 << " " << meanS << " " << num << " " << denom <<
+    " " << mean_comp_size << endl;
 }
 
-int findroot(vector<int>& ptr, int i)
+long findroot(vector<long>& ptr, long i)
 {
     if (ptr[i]<0) return i;
     return ptr[i] = findroot(ptr, ptr[i]);
 }
 
 void percolate(
-    vector<set<int> >& nn_set, 
-    vector<int>& ptr, 
-    vector<int>& order, 
+    vector<set<long> >& nn_set, 
+    vector<long>& ptr, 
+    vector<long>& order, 
     ostream& out
 )
 {
-  int i;
-  int s1;
-  int r1, r2;
-  int N1 = 0, N2 = 0;
-  int mN1;
+  long i;
+  long s1;
+  long r1, r2;
+  long N1 = 1, N2 = 0;
+  long mN1;
   bool found;
-  int size, heap_size;
-  int num, denom, n_comps, large, small, prev_N1;
-  double meanS;
-  int N = order.size();
-  int EMPTY = (-N-1);
+  long size, heap_size;
+  long num, denom, n_comps, large, small, prev_N1;
+  double meanS, mean_comp_size;
+  long N = order.size();
+  long EMPTY = (-N-1);
   bool overpass, new_gcc;
   num = denom = n_comps = 0;
 
   PriorityQueue heap;
-  vector<int> sizes(N+1, 0);
+  vector<long> sizes(N+1, 0);
 
   for (i=0; i<N; i++) ptr[i] = EMPTY;
   for (i=0; i<N; i++) {
@@ -238,11 +252,14 @@ void percolate(
     n_comps += 1;
     heap.push(1);
     sizes[1]++;
-    for (int s2 : nn_set[s1]) {
+    for (long s2 : nn_set[s1]) {
       overpass = new_gcc = false;
       if (ptr[s2] != EMPTY) {
         r2 = findroot(ptr, s2);
         if (r2!=r1) {
+
+            // Begin Union
+            n_comps -= 1;
             if (ptr[r1]>ptr[r2]) {
                 large = -ptr[r2];
                 small = -ptr[r1];
@@ -255,6 +272,7 @@ void percolate(
                 ptr[r1] += ptr[r2];
                 ptr[r2] = r1;
             }
+            // End Union
 
             if (sizes[small]) sizes[small]--;
             if (sizes[large]) sizes[large]--;
@@ -288,7 +306,7 @@ void percolate(
       }
 
     if (denom == 0) meanS = 0.0;
-    else            meanS = float(num)/denom;
+    else            meanS = (1.0*num)/denom;
     if (n_comps == 1) num = denom = meanS = 0;
     if (meanS < 1e-6) meanS = 1.0;
     }
@@ -298,7 +316,7 @@ void percolate(
         mN1 = heap.top();
         heap.pop();
         heap_size = heap.size();
-        for (int k=0; k < heap_size; k++) {
+        for (long k=0; k < heap_size; k++) {
             size = heap.top();
             heap.pop();
             found = false;
@@ -315,7 +333,8 @@ void percolate(
             N2 = 0;
         }
     }
-    writeData(out, N1, N2, meanS);
+    mean_comp_size = (1.0*n_comps) / (i+1);
+    writeData(out, N1, N2, meanS, num, denom, mean_comp_size);
     //printf("%i %i %i %f\n",i+1, N1, N2, meanS);
     //getchar();
   }
@@ -323,10 +342,10 @@ void percolate(
 
 int main(int argc, char* argv[])
 {
-    int N;
-    vector<int> ptr;
-    vector<int> order;
-    vector<set<int> > nn_set;
+    long N;
+    vector<long> ptr;
+    vector<long> order;
+    vector<set<long> > nn_set;
 
     string network = argv[1];
     string order_file = argv[2];
@@ -339,7 +358,7 @@ int main(int argc, char* argv[])
     //cout << "N = " << N << endl;
     ptr.resize(N);
     nn_set.resize(N);
-    for(int i=0; i<N; i++) nn_set[i].clear();
+    for(long i=0; i<N; i++) nn_set[i].clear();
 
     //cout << "Before loadNeighbors" << endl;
     loadNeighbors(network, nn_set, false);

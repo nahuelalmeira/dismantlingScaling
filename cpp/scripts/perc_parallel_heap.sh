@@ -14,19 +14,23 @@ SEED=$( printf %05d $6 )
 BASE_DIR="${BASE_DIR}/${NET_TYPE}"
 BASE_NET="${NET_TYPE}_${PARAM}"
 
-if [ "${NET_TYPE}" == "Lattice" ] || [ "${NET_TYPE}" == "PLattice" ] || [ "${NET_TYPE}" == "Ld3" ]; then
+[ "${NET_TYPE}" == "Lattice" ] || [ "${NET_TYPE}" == "PLattice" ] || [ "${NET_TYPE}" == "Ld3" ] && DETERMINISTIC="true" || DETERMINISTIC="false"
+
+if $DETERMINISTIC == "true"; then
   BASE_NET_DIR="${BASE_DIR}/${BASE_NET}/${BASE_NET}_L${N}"
+  INPUT_NET_NAME="${BASE_NET}_L${N}_00000"
   NET_NAME="${BASE_NET}_L${N}_${SEED}"
 else
   BASE_NET_DIR="${BASE_DIR}/${BASE_NET}/${BASE_NET}_N${N}"
-  NET_NAME="${BASE_NET}_N${N}_${SEED}"
+  INPUT_NET_NAME="${BASE_NET}_N${N}_${SEED}"
+  NET_NAME="${INPUT_NET_NAME}"
 fi
 
-
+INPUT_NET_DIR="${BASE_NET_DIR}/${INPUT_NET_NAME}"
 NET_DIR="${BASE_NET_DIR}/${NET_NAME}"
 ATTACK_DIR="${NET_DIR}/${ATTACK}"
-NETWORK="${NET_DIR}/${NET_NAME}.txt"
-NETWORK_TAR="${NET_DIR}/${NET_NAME}.tar.gz"
+NETWORK="${INPUT_NET_DIR}/${INPUT_NET_NAME}.txt"
+NETWORK_TAR="${INPUT_NET_DIR}/${INPUT_NET_NAME}.tar.gz"
 
 ORDER="${ATTACK_DIR}/oi_list.txt"
 echo ${ORDER}
@@ -73,22 +77,33 @@ if [ "${OVERWRITE}" != "True" ]; then
     fi
 fi
 
-if [ -f "${NETWORK_TAR}" ]; then
-    #echo "Extracting data from ${NETWORK_TAR}"
-    tar --directory=${NET_DIR} -xzf ${NETWORK_TAR}
-fi
-
-../perc_heap $NETWORK $ORDER $OUTPUT 
-
-if [ -f "${NETWORK_TAR}" ]; then
-    rm ${NETWORK}
-else
-    tar --directory=${NET_DIR} -czf ${NETWORK_TAR} ${NETWORK}
+if [ $DETERMINISTIC == "false" ]; then
     if [ -f "${NETWORK_TAR}" ]; then
-        rm ${NETWORK}
+        #echo "Extracting data from ${NETWORK_TAR}"
+        tar --directory=${INPUT_NET_DIR} -xzf ${NETWORK_TAR}
     fi
 fi
 
+if [ $DETERMINISTIC == "true" ]; then
+    if [ ! -f "${NETWORK}" ]; then
+        #echo "Extracting data from ${NETWORK_TAR}"
+        tar --directory=${INPUT_NET_DIR} -xzf ${NETWORK_TAR}
+    fi
+fi
+
+
+../perc_heap $NETWORK $ORDER $OUTPUT 
+
+if [ $DETERMINISTIC == "false" ]; then
+    if [ -f "${NETWORK_TAR}" ]; then
+        rm ${NETWORK}
+    else
+        tar --directory=${INPUT_NET_DIR} -czf ${NETWORK_TAR} ${NETWORK}
+        if [ -f "${NETWORK_TAR}" ]; then
+            rm ${NETWORK}
+        fi
+    fi
+fi
 ## Compress component data and remove original
 tar -czf ${TAR_FILE} --directory ${ATTACK_DIR} comp_data.txt
 
