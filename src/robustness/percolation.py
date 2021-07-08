@@ -20,7 +20,10 @@ def findroot(ptr: Iterable[int], i: int) -> int:
     ptr[i] = findroot(ptr, ptr[i])
     return ptr[i]
 
-def compute_metrics(ptr):
+def compute_metrics(ptr, n):
+    """
+    n: number of added nodes 
+    """
     N = len(ptr)
     EMPTY = -N-1
     sizes = [-r for r in ptr if (r<0) and (r != EMPTY)]
@@ -34,7 +37,7 @@ def compute_metrics(ptr):
     N1 = sizes[N1_idx]
     sizes.remove(N1)
     N2 = np.max(sizes)
-    numerator, denominator = compute_meanS(sizes)
+    numerator, denominator, ncomps = compute_meanS(sizes)
     if denominator == 0:
         meanS = 1.0
     else:
@@ -45,17 +48,18 @@ def compute_metrics(ptr):
     metrics['meanS'] = meanS
     metrics['num'] = numerator
     metrics['denom'] = denominator
+    metrics['avg_comp_size'] = ncomps / n
     return metrics
 
 def compute_meanS(sizes):
     numerator = 0
     denominator = 0
-    N = len(sizes)
-    for i in range(N):
+    ncomps = len(sizes)
+    for i in range(ncomps):
         s = sizes[i]
         numerator += s*s
         denominator += s
-    return numerator, denominator
+    return numerator, denominator, ncomps
 
 
 def percolate_slow(
@@ -123,6 +127,7 @@ def percolate_slow(
     meanS_values = []
     num_values = []
     denom_values = []
+    avg_comp_size_values = []
     N1 = 1
     for i in range(N):
         r1 = s1 = order[i]
@@ -141,12 +146,16 @@ def percolate_slow(
                     if -ptr[r1] > N1:
                         N1 = -ptr[r1]
 
-        _metrics = compute_metrics(ptr)
+        _metrics = compute_metrics(ptr, i+1)
+
+        assert _metrics['denom'] == (i+1) - N1
+
         N1_values.append(_metrics['N1'])
         N2_values.append(_metrics['N2'])
         meanS_values.append(_metrics['meanS'])
         num_values.append(_metrics['num'])
         denom_values.append(_metrics['denom'])
+        avg_comp_size_values.append(_metrics['avg_comp_size'])
 
     metrics: Dict[str, Iterable[Any]] = {}
     metrics['p'] = np.arange(N) / N
@@ -155,6 +164,7 @@ def percolate_slow(
     metrics['meanS'] = meanS_values
     metrics['num'] = num_values
     metrics['denom'] = denom_values
+    #metrics['avg_comp_size'] = avg_comp_size_values
     return metrics
 
 
@@ -357,8 +367,7 @@ def percolate_heap(
     >>> metrics = {metric: [round(value, 2) for value in values] for metric, values in metrics.items()}
     >>> metrics
     {'p': [0.0, 0.14, 0.29, 0.43, 0.57, 0.71, 0.86], 'N1': [1, 1, 2, 2, 3, 3, 4], 'N2': [0, 1, 1, 2, 2, 2, 2], 'meanS': [1.0, 1.0, 1.0, 2.0, 2.0, 1.67, 1.67], 'num': [0, 1, 1, 4, 4, 5, 5], 'denom': [0, 1, 1, 2, 2, 3, 3]}
-    """
-    
+    """ 
     
     heap = []
     order = [int(v) for v in order]
@@ -375,27 +384,26 @@ def percolate_heap(
     meanS_values = []
     num_values = []
     denom_values = []
+    avg_comp_size_values = []
     N1 = 1
     N2 = 0
-    num = 0
-    denom = 0
-    n_comps = 0
+    num = denom = n_comps = 0
     for i in range(N):
         r1 = s1 = order[i]
         ptr[s1] = -1
         n_comps += 1
         num += 1
         denom += 1
-        isolated = True
         heapq.heappush(heap, -1)
         sizes[1] += 1
         for s2 in adjlist[s1]:
             overpass = False
             new_gcc = False
             if ptr[s2] != EMPTY:
-                isolated = False
                 r2 = findroot(ptr, s2)
                 if r2 != r1:
+
+                    ## Begin Union
                     n_comps -= 1
                     if ptr[r1] > ptr[r2]: ## s2 belongs to a greater component than s1
                         large = -ptr[r2]
@@ -408,6 +416,7 @@ def percolate_heap(
                         small = -ptr[r2]
                         ptr[r1] += ptr[r2]
                         ptr[r2] = r1
+                    ## End Union
 
                     if sizes[small]:
                         sizes[small] -= 1
@@ -415,9 +424,6 @@ def percolate_heap(
                         sizes[large] -= 1
                     sizes[small+large] += 1
                     heapq.heappush(heap, -(small+large))
-                    #print('push', -(small+large))
-                    #print('heap', [-elem for elem in heap])
-                    #print('sizes', sizes)
 
                     ## New GCC
                     if -ptr[r1] > N1:
@@ -443,10 +449,6 @@ def percolate_heap(
                             + (small+large)*(small+large)
                         )
 
-        #if isolated:
-            #heapq.heappush(heap, -1)
-        #    sizes[1] += 1
-
         if denom == 0:
             meanS = 0.0
         else:
@@ -457,12 +459,12 @@ def percolate_heap(
 
         if meanS == 0:
             meanS = 1.0
-        #print(heap)
+
         if len(heap) < 2:
             N2 = 0
         else:
             mN1 = heapq.heappop(heap)
-            for k in range(len(heap)):
+            for _ in range(len(heap)):
                 size = -heapq.heappop(heap)
                 found = False
                 if sizes[size] > 0:
@@ -475,29 +477,13 @@ def percolate_heap(
             if not found:
                 heapq.heappush(heap, mN1)
                 N2 = 0
-            """
-            if sizes[-heap[1]] > 0:
-                N2 = -heap[1]
-            else:
-                mN1 = heap[0]
-                found = False
-                for k in range(1, len(heap)):
-                    if sizes[-heap[k]] > 0:
-                        N2 = -heap[k]
-                        found = True
-                        break
-                if not found:
-                    N2 = 0
-                for _ in range(k):
-                    heapq.heappop(heap)
-                heapq.heappush(heap, mN1)
-            """
-        #print(i, N1, N2, sizes, heap)
+
         N1_values.append(N1)
         N2_values.append(N2)
         meanS_values.append(float(meanS))
         num_values.append(num)
         denom_values.append(denom)
+        avg_comp_size_values.append(n_comps/(i+1))
 
     metrics: Dict[str, Iterable[Any]] = {}
     metrics['p'] = np.arange(N) / N
@@ -506,12 +492,12 @@ def percolate_heap(
     metrics['meanS'] = meanS_values
     metrics['num'] = num_values
     metrics['denom'] = denom_values
+    #metrics['avg_comp_size'] = avg_comp_size_values
     return metrics
 
 if __name__ == '__main__':
     import doctest
     doctest.testmod()
-
 
     # P5
     adjlist = [{1}, {0, 2}, {1, 3}, {2, 4}, {3}]
@@ -557,6 +543,7 @@ if __name__ == '__main__':
     plt.show()
     """
 
+    """
     perc_func = {
         'fast': percolate_fast,
         #'slow': percolate_slow,
@@ -607,3 +594,4 @@ if __name__ == '__main__':
     ax.legend()
     plt.show()
 
+    """

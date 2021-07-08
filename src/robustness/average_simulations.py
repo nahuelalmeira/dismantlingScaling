@@ -37,7 +37,7 @@ def parse_args():
         '--overwrite', action='store_true', help='Overwrite procedure'
     )
     parser.add_argument(
-        '--log', type=str, default='info',
+        '--log', type=str, default='warning',
         choices=['debug', 'info', 'warning', 'error', 'exception', 'critical']
     )
     parser.add_argument(
@@ -93,6 +93,9 @@ for attack in attacks:
     Ngcc_sqr_values      = np.zeros(N)
     Nsec_values          = np.zeros(N)
     meanS_values         = np.zeros(N)
+    num_values           = np.zeros(N)
+    denom_values         = np.zeros(N)
+    avg_comp_size_values = np.zeros(N)
     meanS_pow2_values    = np.zeros(N)
     meanS_pow4_values    = np.zeros(N)
     chiDelta_values      = np.zeros(N)
@@ -141,11 +144,21 @@ for attack in attacks:
         Ngcc_values_it = aux[:,0]
         Nsec_values_it = aux[:,1]
         meanS_values_it = aux[:,2]
+        try:
+            num_values_it = aux[:,3]
+            denom_values_it = aux[:,4]
+            avg_comp_size_values_it = aux[:,5]
+        except IndexError as e:
+            logger.exception(e)
+            raise
 
         Ngcc_values += Ngcc_values_it
         Ngcc_sqr_values += Ngcc_values_it**2
         Nsec_values += Nsec_values_it
         meanS_values += meanS_values_it
+        num_values += num_values_it
+        denom_values += denom_values_it
+        avg_comp_size_values += avg_comp_size_values_it
 
         meanS_pow2_values += meanS_values_it**2
         meanS_pow4_values += meanS_values_it**4
@@ -154,14 +167,17 @@ for attack in attacks:
             chiDelta_values_it = np.append(np.diff(Ngcc_values_it), 0)
             chiDelta_values += chiDelta_values_it
 
-    varSgcc_values = (Ngcc_sqr_values/valid_its - (Ngcc_values/valid_its)**2) / (N)
-    Ngcc_values = Ngcc_values / valid_its
-    Sgcc_values = Ngcc_values / N
-    Nsec_values = Nsec_values / valid_its
-    meanS_values = meanS_values / valid_its
-    chiDelta_values = chiDelta_values / valid_its
-    meanS_pow2_values = meanS_pow2_values / valid_its
-    meanS_pow4_values = meanS_pow4_values / valid_its
+    varSgcc_values       = (Ngcc_sqr_values/valid_its - (Ngcc_values/valid_its)**2) / (N)
+    Ngcc_values          = Ngcc_values / valid_its
+    Sgcc_values          = Ngcc_values / N
+    Nsec_values          = Nsec_values / valid_its
+    meanS_values         = meanS_values / valid_its
+    num_values           = num_values / valid_its
+    denom_values         = denom_values / valid_its
+    avg_comp_size_values = avg_comp_size_values / valid_its
+    chiDelta_values      = chiDelta_values / valid_its
+    meanS_pow2_values    = meanS_pow2_values / valid_its
+    meanS_pow4_values    = meanS_pow4_values / valid_its
 
     d = {
         'f': np.arange(N)/N,
@@ -169,6 +185,9 @@ for attack in attacks:
         'varSgcc': varSgcc_values,
         'Nsec': Nsec_values,
         'meanS': meanS_values,
+        'num': num_values,
+        'denom': denom_values,
+        'avg_comp_size': avg_comp_size_values,
         'chiDelta': chiDelta_values,
         'meanS_pow2': meanS_pow2_values,
         'meanS_pow4': meanS_pow4_values
