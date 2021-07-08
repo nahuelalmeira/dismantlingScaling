@@ -8,6 +8,13 @@
 
 # Networks
 networks/*
+
+# Other dirs
+submission/*
+trefemac2021/*
+seminario/*
+draft/*
+
 # vscode
 .vscode
 
