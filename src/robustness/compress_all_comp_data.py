@@ -60,7 +60,7 @@ for p in NETWORKS_DIR.glob(pattern):
 
     logger.debug(f'Visiting path {str(p)}')
     for fast_file in ['comp_data_fast.txt', 'comp_data_fast.tar.gz']:
-        full_fast_file = p / 'comp_data_fast.txt'
+        full_fast_file = p / fast_file
         if full_fast_file.is_file():
             logger.info(f'Removing file    {full_fast_file}')
             full_fast_file.unlink()
