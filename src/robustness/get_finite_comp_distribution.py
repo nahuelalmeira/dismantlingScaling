@@ -60,6 +60,16 @@ dropLargest     = args.dropLargest
 logger = logging.getLogger(__name__)
 logger.setLevel(getattr(logging, logging_level))
 
+logger.info('#########################')
+logger.info(f'net_type = {net_type}')
+logger.info(f'param    = {param}')
+logger.info(f'size     = {size}')
+logger.info(f'attack   = {attack}')
+logger.info(f'f        = {str_f}')
+logger.info(f'nseeds   = {nseeds}')
+logger.info(f'drop     = {dropLargest}')
+logger.info('#########################')
+
 dir_name = NETWORKS_DIR / net_type
 base_net_name, base_net_name_size = get_base_network_name(net_type, size, param)
 base_net_dir = dir_name / base_net_name / base_net_name_size
@@ -95,22 +105,23 @@ for seed in seeds:
     net_dir = base_net_dir / net_name
     attack_dir = net_dir / attack
 
+    ## Read graph
     try:
         g = read_data_file(str(net_dir), net_name, reader='igraph')
+    except FileNotFoundError as e:
+        #logger.exception(e)
+        logger.warning(f'File {net_name} does not exists')
+        continue
+
+    ## Read node order
+    try:
         oi_values = read_data_file(
             str(attack_dir), 'oi_list', reader='numpyInt'
         )
-    except FileNotFoundError:
-        logger.warning('File could not be read')
+    except FileNotFoundError as e:
+        #logger.exception(e)
+        logger.warning(f'File "oi_list.txt" does not exists')
         continue
-
-    if not g.is_simple():
-        logger.info(f'Network "{net_name}" will be considered as simple.')
-        g.simplify()
-
-    if g.is_directed():
-        logger.info(f'Network "{net_name}" will be considered as undirected.')
-        g.to_undirected()
 
     N = g.vcount()
     g.vs['original_index'] = range(N)
